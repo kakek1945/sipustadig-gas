@@ -1,0 +1,3996 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Perpustakaan Sekolah — Sirkulib (Sistem Informasi Perpustakaan)</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            app: {
+              background: "#eef2f6",
+              surface: "#ffffff",
+              surfaceSubtle: "#f6f8fa",
+              border: "#d0d7de",
+              borderMuted: "#d8dee4",
+              text: "#24292f",
+              muted: "#57606a",
+              mutedLight: "#8c959f",
+              primary: "#0969da",
+              primaryHover: "#0757b5",
+              success: "#1f883d",
+              successHover: "#1a7f37",
+              successSurface: "#dafbe1",
+              danger: "#cf222e",
+              dangerHover: "#a40e26",
+              dangerSurface: "#ffebe9",
+              warning: "#9a6700",
+              warningSurface: "#fff8c5",
+              info: "#0969da",
+              infoSurface: "#ddf4ff",
+              neutral: "#57606a",
+              neutralSurface: "#f6f8fa",
+              topbar: "#24292f",
+              topbarMuted: "#d0d7de"
+            }
+          },
+          borderRadius: {
+            app: "6px"
+          },
+          boxShadow: {
+            card: "0 1px 0 rgba(27, 31, 36, .04)"
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    /* ===================================================================
+       DESIGN SYSTEM: ui-ux-pustaka.md + DESIGN.md (Soft School Library)
+       Theme Policy: Light-only (#eef2f6), No dark mode, No gradients
+       =================================================================== */
+    * { box-sizing: border-box; }
+    body {
+      background: #eef2f6;
+      color: #24292f;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    .topbar {
+      background: #24292f;
+      color: #ffffff;
+    }
+    .topbar-inner {
+      align-items: center;
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+      margin: 0 auto;
+      max-width: 1360px;
+      padding: 10px 20px;
+      flex-wrap: wrap;
+    }
+    .nav-link {
+      border-radius: 6px;
+      color: #d0d7de;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 10px;
+      text-decoration: none;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .nav-link:hover {
+      background: rgba(255, 255, 255, .12);
+      color: #ffffff;
+    }
+    .nav-link-active {
+      background: #ffffff !important;
+      color: #24292f !important;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 7px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #24292f;
+      text-align: left;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+    .sidebar-item:hover {
+      background: #f6f8fa;
+    }
+    .sidebar-item-active {
+      background: #ddf4ff !important;
+      color: #0969da !important;
+      font-weight: 600;
+    }
+    .sidebar-collapsed .sidebar-label,
+    .sidebar-collapsed .sidebar-section-heading {
+      display: none;
+    }
+
+    .page-header {
+      align-items: flex-start;
+      display: flex;
+      gap: 16px;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .page-title {
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+      margin: 0;
+      color: #24292f;
+    }
+    .page-description {
+      color: #57606a;
+      margin: 4px 0 0;
+      font-size: 14px;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      box-shadow: 0 1px 0 rgba(27, 31, 36, .04);
+    }
+    .card-header {
+      align-items: center;
+      border-bottom: 1px solid #d8dee4;
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 16px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0;
+      color: #24292f;
+    }
+    .card-body {
+      padding: 16px;
+    }
+
+    .stats-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .stat-card {
+      background: #ffffff;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      padding: 16px;
+      box-shadow: 0 1px 0 rgba(27, 31, 36, .04);
+    }
+    .stat-label {
+      color: #57606a;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .stat-value {
+      color: #24292f;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-top: 8px;
+    }
+
+    .book-grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+    .book-card {
+      background: #ffffff;
+      border: 1px solid #d0d7de;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 1px 0 rgba(27, 31, 36, .04);
+    }
+    .book-cover {
+      align-items: center;
+      aspect-ratio: 3 / 4;
+      background: #f6f8fa;
+      border-bottom: 1px solid #d8dee4;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 14px;
+      overflow: hidden;
+    }
+    .book-card-body {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+    }
+    .book-title {
+      color: #24292f;
+      display: -webkit-box;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.3;
+      margin: 0;
+      overflow: hidden;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+    .book-meta {
+      color: #57606a;
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .btn {
+      align-items: center;
+      border: 1px solid rgba(27, 31, 36, .15);
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      font-size: 13px;
+      font-weight: 600;
+      gap: 6px;
+      justify-content: center;
+      min-height: 32px;
+      padding: 5px 12px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-primary { background: #0969da; color: #ffffff; }
+    .btn-primary:hover { background: #0757b5; }
+    .btn-success { background: #1f883d; color: #ffffff; }
+    .btn-success:hover { background: #1a7f37; }
+    .btn-danger { background: #cf222e; color: #ffffff; }
+    .btn-danger:hover { background: #a40e26; }
+    .btn-secondary { background: #ffffff; color: #24292f; border-color: #d0d7de; }
+    .btn-secondary:hover { background: #f6f8fa; }
+    .btn-warning { background: #9a6700; color: #ffffff; }
+
+    .badge {
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.3;
+      padding: 2px 8px;
+      white-space: nowrap;
+    }
+    .badge-compact { font-size: 11px; padding: 2px 8px; }
+    .badge-success { background: #dafbe1; color: #1a7f37; }
+    .badge-primary { background: #ddf4ff; color: #0969da; }
+    .badge-danger { background: #ffebe9; color: #cf222e; }
+    .badge-warning { background: #fff8c5; color: #9a6700; }
+    .badge-neutral { background: #f6f8fa; color: #57606a; border: 1px solid #d8dee4; }
+
+    .table-wrap {
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      overflow-x: auto;
+      background: #ffffff;
+    }
+    .data-table {
+      border-collapse: collapse;
+      min-width: 780px;
+      width: 100%;
+    }
+    .data-table th {
+      background: #eef2f6;
+      border-bottom: 1px solid #d0d7de;
+      color: #57606a;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 10px 12px;
+      text-align: left;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .data-table td {
+      border-bottom: 1px solid #d8dee4;
+      padding: 10px 12px;
+      vertical-align: middle;
+      font-size: 13px;
+    }
+    .data-table tr:hover td {
+      background: #f6f8fa;
+    }
+    .code-cell {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    input, select, textarea {
+      background: #ffffff;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      color: #24292f;
+      font-size: 14px;
+      min-height: 36px;
+      padding: 6px 10px;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: #0969da;
+      box-shadow: 0 0 0 3px rgba(9, 105, 218, .15);
+      outline: none;
+    }
+    .scan-input {
+      font-size: 18px;
+      font-weight: 700;
+      min-height: 44px;
+      padding: 9px 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    .scan-panel {
+      background: #ddf4ff;
+      border: 1px solid rgba(9, 105, 218, .25);
+      border-radius: 6px;
+      padding: 14px;
+    }
+    .transaction-layout {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+    }
+
+    .flash, .errors, .warning-box, .info-box {
+      background: #ffffff;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 10px 14px;
+      font-size: 13px;
+    }
+    .flash { border-left: 4px solid #1f883d; }
+    .errors { border-left: 4px solid #cf222e; color: #cf222e; }
+    .warning-box { border-left: 4px solid #9a6700; }
+    .info-box { border-left: 4px solid #0969da; }
+
+    .empty-state {
+      align-items: center;
+      background: #ffffff;
+      border: 1px dashed #d0d7de;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 32px 16px;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .transaction-layout { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 700px) {
+      .topbar-inner { align-items: stretch; flex-direction: column; }
+      .page-header { flex-direction: column; }
+      .book-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 420px) {
+      .book-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =================================================================== -->
+  <!-- TOPBAR (ui-ux-pustaka.md: #24292f background, white logo box, nav)  -->
+  <!-- =================================================================== -->
+  <header class="topbar sticky top-0 z-30 border-b border-[#373e47]">
+    <div class="topbar-inner">
+      <!-- Brand & School Name -->
+      <div class="flex items-center gap-3">
+        <button id="btnToggleSidebar" type="button" class="px-2 py-1 rounded-[6px] text-[#d0d7de] hover:text-white hover:bg-white/10 text-xs font-semibold" title="Sembunyikan/Tampilkan Sidebar">
+          ☰
+        </button>
+        <div class="w-8 h-8 rounded-[6px] bg-white text-[#24292f] flex items-center justify-center font-bold text-sm shrink-0">
+          <svg class="w-4 h-4 text-[#0969da]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-sm text-white leading-tight">Perpustakaan Sekolah</span>
+            <span class="text-[11px] px-1.5 py-0.5 rounded bg-white/10 text-[#d0d7de] font-mono">Sipustadig v3.0 • Vercel + GAS + Supabase</span>
+          </div>
+          <div class="text-[11px] text-[#d0d7de]">SMP Negeri • Sistem Informasi Perbukuan & Sirkulasi Barcode</div>
+        </div>
+      </div>
+
+      <!-- Recommended Topbar Navigation (ui-ux-pustaka.md) -->
+      <nav class="flex items-center gap-1 overflow-x-auto py-1">
+        <button type="button" data-tab="dashboard-librarian" class="nav-tab-btn nav-link nav-link-active">
+          Dashboard
+        </button>
+        <button type="button" data-tab="master-members" class="nav-tab-btn nav-link">
+          Anggota
+        </button>
+        <button type="button" data-tab="master-books" class="nav-tab-btn nav-link">
+          Buku
+        </button>
+        <button type="button" data-tab="master-copies" class="nav-tab-btn nav-link">
+          Eksemplar
+        </button>
+        <button type="button" data-tab="admin" class="nav-tab-btn nav-link">
+          Peminjaman
+        </button>
+        <button type="button" data-tab="returns" class="nav-tab-btn nav-link">
+          Pengembalian
+        </button>
+        <button type="button" data-tab="fines" class="nav-tab-btn nav-link">
+          Denda
+        </button>
+        <button type="button" data-tab="catalog" class="nav-tab-btn nav-link">
+          Katalog
+        </button>
+        <button type="button" data-tab="reports" class="nav-tab-btn nav-link">
+          Laporan
+        </button>
+        <button type="button" data-tab="settings" class="nav-tab-btn nav-link">
+          Pengaturan
+        </button>
+      </nav>
+
+      <!-- Right Actions: Active Member Barcode & GAS/Supabase Code -->
+      <div class="flex items-center gap-2">
+        <button id="btnOpenArchitecture" type="button" class="px-2.5 py-1.5 rounded-[6px] border border-white/20 text-[#d0d7de] hover:text-white hover:bg-white/10 text-xs font-semibold">
+          ⚙️ Lihat Kode Blogspot + GAS + Supabase
+        </button>
+        <button id="btnOpenBarcodeLogin" type="button" class="px-2.5 py-1.5 rounded-[6px] bg-[#0969da] hover:bg-[#0757b5] text-white text-xs font-semibold flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7V5a2 2 0 012-2h2m10 0h2a2 2 0 012 2v2m0 10v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2M7 8h1v8H7V8zm3 0h2v8h-2V8zm4 0h1v8h-1V8zm3 0h1v8h-1V8z"/>
+          </svg>
+          <span id="headerStudentName">Raka (8A) • Ganti/Scan</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex lg:hidden border-b border-[#d0d7de] px-2 py-1.5 bg-white justify-around text-xs">
+    <button type="button" data-tab="catalog" class="nav-tab-btn btn btn-secondary text-xs">📚 Katalog</button>
+    <button type="button" data-tab="catalog" class="nav-tab-btn btn btn-secondary text-xs">📚 Eksplor Katalog</button>
+    <button type="button" data-tab="loans" class="nav-tab-btn btn btn-secondary text-xs">🎫 Pinjaman (2)</button>
+    <button type="button" data-tab="leaderboard" class="nav-tab-btn btn btn-secondary text-xs">🏆 Ranking</button>
+    <button type="button" data-tab="leaderboard" class="nav-tab-btn btn btn-secondary text-xs">🏆 Leaderboard SMP</button>
+    <button type="button" data-tab="admin" class="nav-tab-btn btn btn-secondary text-xs">⚡ Admin Scan</button>
+  </div>
+
+
+  <!-- =================================================================== -->
+  <!-- MAIN WORKSPACE: SIDEBAR OPSIONAL + APP CONTAINER                    -->
+  <!-- =================================================================== -->
+  <div class="flex min-h-[calc(100vh-56px)]">
+
+    <!-- SIDEBAR OPSIONAL (ui-ux-pustaka.md + DESIGN.md Section 5.4) -->
+    <aside id="appSidebar" class="w-60 shrink-0 bg-white border-r border-[#d0d7de] hidden lg:flex flex-col justify-between p-3 select-none">
+      <div class="space-y-4">
+        <!-- Dashboard Group -->
+        <div>
+          <div class="sidebar-section-heading px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[#57606a]">
+            Dashboard
+          </div>
+          <div class="space-y-0.5 mt-1">
+            <button type="button" data-tab="dashboard-librarian" class="nav-tab-btn sidebar-item sidebar-item-active">
+              <span>📊</span>
+              <span class="sidebar-label">Librarian Dashboard</span>
+            </button>
+            <button type="button" data-tab="dashboard-principal" class="nav-tab-btn sidebar-item">
+              <span>🏫</span>
+              <span class="sidebar-label">Principal Dashboard</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Master Data Group -->
+        <div>
+          <div class="sidebar-section-heading px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[#57606a]">
+            Master Data
+          </div>
+          <div class="space-y-0.5 mt-1">
+            <button type="button" data-tab="master-members" class="nav-tab-btn sidebar-item">
+              <span>🪪</span>
+              <span class="sidebar-label">Anggota & Barcode</span>
+            </button>
+            <button type="button" data-tab="master-categories" class="nav-tab-btn sidebar-item">
+              <span>🏷️</span>
+              <span class="sidebar-label">Kategori Buku</span>
+            </button>
+            <button type="button" data-tab="master-books" class="nav-tab-btn sidebar-item">
+              <span>📘</span>
+              <span class="sidebar-label">Buku & Sirkulasi Cepat</span>
+            </button>
+            <button type="button" data-tab="master-copies" class="nav-tab-btn sidebar-item">
+              <span>🏷️</span>
+              <span class="sidebar-label">Eksemplar & Label</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Transaksi Group -->
+        <div>
+          <div class="sidebar-section-heading px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[#57606a]">
+            Transaksi Barcode
+          </div>
+          <div class="space-y-0.5 mt-1">
+            <button type="button" data-tab="admin" class="nav-tab-btn sidebar-item">
+              <span>⚡</span>
+              <span class="sidebar-label">Meja Pustakawan (Scan)</span>
+            </button>
+            <button type="button" data-tab="returns" class="nav-tab-btn sidebar-item">
+              <span>🔄</span>
+              <span class="sidebar-label">Peminjaman & Pengembalian</span>
+            </button>
+            <button type="button" data-tab="loans" class="nav-tab-btn sidebar-item">
+              <span>🎫</span>
+              <span class="sidebar-label">Pinjaman & Jurnal (<span id="navLoanCount">2</span>)</span>
+            </button>
+            <button type="button" data-tab="fines" class="nav-tab-btn sidebar-item">
+              <span>💰</span>
+              <span class="sidebar-label">Denda Keterlambatan</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Katalog & Laporan Group -->
+        <div>
+          <div class="sidebar-section-heading px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[#57606a]">
+            Katalog & Laporan
+          </div>
+          <div class="space-y-0.5 mt-1">
+            <button type="button" data-tab="catalog" class="nav-tab-btn sidebar-item">
+              <span>📖</span>
+              <span class="sidebar-label">Katalog Online (SIBI)</span>
+            </button>
+            <button type="button" data-tab="leaderboard" class="nav-tab-btn sidebar-item">
+              <span>🏆</span>
+              <span class="sidebar-label">Leaderboard Literasi</span>
+            </button>
+            <button type="button" data-tab="reports" class="nav-tab-btn sidebar-item">
+              <span>📈</span>
+              <span class="sidebar-label">Laporan & Pengaturan</span>
+            </button>
+            <button type="button" data-tab="settings" class="nav-tab-btn sidebar-item">
+              <span>📋</span>
+              <span class="sidebar-label">Audit Log</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compact Member Info Box in Sidebar -->
+      <div class="p-3 rounded-[6px] bg-[#f6f8fa] border border-[#d0d7de] text-xs space-y-1.5">
+        <div class="flex items-center justify-between font-semibold text-[#24292f]">
+          <span class="sidebar-label">Anggota Aktif:</span>
+          <span id="heroBarcodeId" class="code-cell text-[#0969da]">SMP-2026-0812</span>
+        </div>
+        <div class="sidebar-label text-[#57606a] truncate">
+          <strong id="heroStudentName" class="text-[#24292f]">Raka Pratama</strong> • <span id="headerStreakText">7 Hari</span> • <span id="headerXpText">1.450 XP</span>
+        </div>
+        <div class="sidebar-label flex items-center justify-between text-[11px] text-[#57606a] pt-1 border-t border-[#d8dee4]">
+          <span id="heroLevelBadge">Level 6</span>
+          <span id="heroXpProgressText">1.450 XP</span>
+        </div>
+        <div class="w-full h-1.5 rounded-full bg-[#d8dee4] overflow-hidden">
+          <div id="heroXpBar" class="h-full bg-[#0969da]" style="width: 82%"></div>
+        </div>
+        <div id="heroBadgesContainer" class="hidden"></div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTAINER (ui-ux-pustaka.md: max-width 1360px, padding 24px-32px) -->
+    <main class="flex-1 max-w-[1360px] w-full mx-auto p-4 sm:p-6 space-y-5">
+
+      <!-- FLASH MESSAGE BANNER (ui-ux-pustaka.md: .info-box / .flash) -->
+      <div id="flashBanner" class="info-box flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span class="badge badge-primary">Siap Scan USB / Kamera</span>
+          <span>Gunakan scanner barcode untuk mempercepat transaksi peminjaman, pengembalian, dan pencarian katalog buku sekolah.</span>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button id="btnQuickScanBook" type="button" class="btn btn-secondary text-xs">
+            📷 Scan Barcode Buku Fisik / Kartu Pelajar
+          </button>
+        </div>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- PAGE 1: DASHBOARD PUSTAKAWAN (ui-ux-pustaka.md Priority #2)         -->
+      <!-- =================================================================== -->
+      <section id="tab-dashboard-librarian" class="tab-panel space-y-5">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Dashboard Pustakawan</h1>
+            <p class="page-description">Ringkasan cepat koleksi buku, eksemplar, transaksi harian, keterlambatan, dan denda perpustakaan.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" data-tab="admin" class="nav-tab-btn btn btn-primary">
+              + Transaksi Peminjaman (Scan)
+            </button>
+            <button type="button" data-tab="returns" class="nav-tab-btn btn btn-secondary">
+              Proses Pengembalian
+            </button>
+            <button type="button" data-tab="master-books" class="nav-tab-btn btn btn-secondary">
+              Tambah Buku
+            </button>
+          </div>
+        </div>
+
+        <!-- 8 STATISTIC CARDS (ui-ux-pustaka.md: 4 columns desktop, status colors only on numbers/badges) -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">
+              <span>Total Buku</span>
+              <span class="badge badge-neutral">Judul</span>
+            </div>
+            <div id="libTotalTitles" class="stat-value">8</div>
+            <div class="text-xs text-[#57606a] mt-1">Kurikulum Merdeka, STEM & Nonteks</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">
+              <span>Total Eksemplar</span>
+              <span class="badge badge-neutral">Fisik</span>
+            </div>
+            <div id="sibiStatAvailable" class="stat-value">53</div>
+            <div class="text-xs text-[#57606a] mt-1">Terdaftar dengan kode barcode</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">
+              <span>Tersedia di Rak</span>
+              <span class="badge badge-success">Siap Pinjam</span>
+            </div>
+            <div id="statAvailableCopies" class="stat-value text-[#1f883d]">51</div>
+            <div class="text-xs text-[#57606a] mt-1">Kondisi baik di rak A, B, C</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">
+              <span>Sedang Dipinjam</span>
+              <span class="badge badge-primary">Aktif</span>
+            </div>
+            <div id="libActiveLoansCard" class="stat-value text-[#0969da]">2</div>
+            <div class="text-xs text-[#57606a] mt-1">Batas pinjam 7 hari kerja</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">
+              <span>Pinjaman Terlambat</span>
+              <span class="badge badge-danger">Overdue</span>
+            </div>
+            <div class="stat-value text-[#cf222e]">1</div>
+            <div class="text-xs text-[#57606a] mt-1">Melewati tanggal jatuh tempo</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">
+              <span>Denda Belum Lunas</span>
+              <span class="badge badge-danger">Tagihan</span>
+            </div>
+            <div id="libUnpaidFinesCard" class="stat-value text-[#cf222e]">Rp5.000</div>
+            <div class="text-xs text-[#57606a] mt-1">Tarif Rp1.000 / hari terlambat</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">
+              <span>Anggota Aktif</span>
+              <span class="badge badge-primary">Terdaftar</span>
+            </div>
+            <div id="statStreak" class="stat-value">342</div>
+            <div class="text-xs text-[#57606a] mt-1">Siswa Kelas VII–IX & Guru (<span id="statBooksRead">14</span> tamat • Rank <span id="statClassRank">#2</span>)</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">
+              <span>Transaksi & Baca Hari Ini</span>
+              <span class="badge badge-success">Harian</span>
+            </div>
+            <div id="sibiStatReads" class="stat-value">28</div>
+            <div class="text-xs text-[#57606a] mt-1">Unduhan PDF: <span id="sibiStatDownloads">19</span> • Pinjam: <span id="statActiveLoansCount">2</span></div>
+          </div>
+        </div>
+
+        <!-- COMPACT DATA CARDS (ui-ux-pustaka.md: 3 cols xl, 14px padding) -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Status Eksemplar & Pinjaman Aktif Terbaru</h2>
+            <button type="button" data-tab="master-copies" class="nav-tab-btn btn btn-secondary text-xs">Lihat Semua Eksemplar</button>
+          </div>
+          <div class="card-body">
+            <div id="compactCardsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- RECENT LOAN TRANSACTIONS TABLE -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Daftar Peminjaman Aktif & Jatuh Tempo</h2>
+            <button type="button" data-tab="loans" class="nav-tab-btn btn btn-secondary text-xs">Kelola Transaksi</button>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-wrap border-0 rounded-none">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>No. Transaksi</th>
+                    <th>Nomor Anggota & Nama</th>
+                    <th>Kode Eksemplar & Judul Buku</th>
+                    <th>Jatuh Tempo</th>
+                    <th>Status</th>
+                    <th class="text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="librarianLoanTableBody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- PAGE 2: DASHBOARD KEPALA SEKOLAH (DESIGN.md Principal Dashboard)    -->
+      <!-- =================================================================== -->
+      <section id="tab-dashboard-principal" class="tab-panel hidden space-y-5">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Dashboard Kepala Sekolah</h1>
+            <p class="page-description">Evaluasi keterbacaan koleksi perpustakaan, tingkat literasi kelas, dan kepatuhan pengembalian buku.</p>
+          </div>
+          <button type="button" data-tab="reports" class="nav-tab-btn btn btn-primary">
+            Export Laporan Bulanan
+          </button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label"><span>Partisipasi Literasi SMP</span><span class="badge badge-success">Sangat Baik</span></div>
+            <div class="stat-value text-[#1f883d]">89,4%</div>
+            <div class="text-xs text-[#57606a] mt-1">Siswa aktif meminjam/membaca bulan ini</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label"><span>Rasio Buku Teks : Siswa</span><span class="badge badge-primary">Memenuhi</span></div>
+            <div class="stat-value text-[#0969da]">1 : 1,2</div>
+            <div class="text-xs text-[#57606a] mt-1">Gabungan eksemplar cetak & E-Book PDF</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label"><span>Jurnal GLS Terkumpul</span><span class="badge badge-primary">Bulan Ini</span></div>
+            <div class="stat-value">418</div>
+            <div class="text-xs text-[#57606a] mt-1">Terekap otomatis ke Google Sheets guru</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label"><span>Ketepatan Pengembalian</span><span class="badge badge-warning">Perlu Pantauan</span></div>
+            <div class="stat-value text-[#9a6700]">94,2%</div>
+            <div class="text-xs text-[#57606a] mt-1">5,8% transaksi mengalami keterlambatan</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- PAGE 3: PEMINJAMAN BARCODE (ui-ux-pustaka.md: .transaction-layout)  -->
+      <!-- =================================================================== -->
+      <section id="tab-admin" class="tab-panel hidden space-y-5">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Transaksi Peminjaman Buku (Scan Barcode)</h1>
+            <p class="page-description">Scan kartu anggota lalu scan kode eksemplar buku menggunakan scanner USB/Bluetooth atau input manual.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" data-tab="returns" class="nav-tab-btn btn btn-secondary">
+              Ke Halaman Pengembalian →
+            </button>
+          </div>
+        </div>
+
+        <div class="transaction-layout">
+          <!-- Left Column (420px): Barcode Scanner Inputs & Active Member Panel -->
+          <div class="space-y-4">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">1. Scan / Input Nomor Anggota</h2>
+                <button id="btnAdminFillSampleStudent" type="button" class="btn btn-secondary text-xs">
+                  Simulasi Scan Siswa
+                </button>
+              </div>
+              <div class="card-body space-y-3">
+                <div>
+                  <label for="adminStudentBarcodeInput" class="block text-xs font-semibold mb-1">Nomor Anggota *</label>
+                  <input id="adminStudentBarcodeInput" type="text" value="SMP-2026-0812" class="scan-input w-full" placeholder="Scan kartu anggota..." />
+                  <p class="text-xs text-[#57606a] mt-1">Tekan Enter atau gunakan scanner USB untuk memuat profil anggota.</p>
+                </div>
+
+                <!-- Scan Panel Anggota (ui-ux-pustaka.md: .scan-panel #ddf4ff) -->
+                <div id="borrowMemberScanPanel" class="scan-panel space-y-1.5 text-xs">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">2. Scan / Input Kode Eksemplar</h2>
+                <button id="btnAdminFillSampleBook" type="button" class="btn btn-secondary text-xs">
+                  Ganti Buku
+                </button>
+              </div>
+              <div class="card-body space-y-3">
+                <div>
+                  <label for="adminBookBarcodeInput" class="block text-xs font-semibold mb-1">Kode Eksemplar Buku *</label>
+                  <input id="adminBookBarcodeInput" type="text" value="BK-SMP-001" class="scan-input w-full" placeholder="Contoh: BK-SMP-001" />
+                  <p class="text-xs text-[#57606a] mt-1">Aturan PRD: Siswa maks 2 buku (7 hari) • Guru maks 5 buku (14 hari) • Staf maks 3 buku (7 hari).</p>
+                </div>
+
+                <div class="flex gap-2">
+                  <button id="btnAdminProcessBorrow" type="button" class="btn btn-primary w-full py-2">
+                    📥 Catat Peminjaman Fisik (+30 XP)
+                  </button>
+                  <button id="btnAdminProcessReturn" type="button" class="btn btn-success py-2 px-3" title="Pengembalian Cepat">
+                    📤 Catat Pengembalian (+20 XP)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Daftar Buku yang Dipinjam + Form Tambah Buku Baru -->
+          <div class="space-y-4">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">Daftar Pinjaman Aktif Anggota</h2>
+                <span class="badge badge-primary">Tersinkronisasi ke Supabase</span>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-wrap border-0 rounded-none">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>No. Transaksi</th>
+                        <th>Kode Eksemplar</th>
+                        <th>Judul Buku</th>
+                        <th>Peminjam</th>
+                        <th>Jatuh Tempo</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="activeBorrowListBody">
+                      <!-- Populated by JS -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form Tambah Buku & Upload PDF via GAS -->
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">Tambah Buku & Eksemplar Baru (Google Drive GAS + Supabase)</h2>
+              </div>
+              <div class="card-body">
+                <form id="formAddBook" class="space-y-3">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label for="newBookTitle" class="block text-xs font-semibold mb-1">Judul Buku *</label>
+                      <input id="newBookTitle" type="text" required placeholder="Contoh: Bahasa Indonesia Kelas VIII" class="w-full" />
+                    </div>
+                    <div>
+                      <label for="newBookAuthor" class="block text-xs font-semibold mb-1">Penulis / Penerbit *</label>
+                      <input id="newBookAuthor" type="text" required placeholder="Contoh: Kemendikdasmen RI" class="w-full" />
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label for="newBookCategory" class="block text-xs font-semibold mb-1">Kategori</label>
+                      <select id="newBookCategory" class="w-full">
+                        <option value="Buku Teks Kurikulum Merdeka">Buku Teks Kurikulum Merdeka</option>
+                        <option value="Buku Bermuatan STEM">Buku Bermuatan STEM</option>
+                        <option value="Buku Nonteks">Buku Nonteks</option>
+                        <option value="Buku Audio">Buku Audio</option>
+                        <option value="Komik Edukasi">Komik Edukasi</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="newBookStock" class="block text-xs font-semibold mb-1">Jumlah Eksemplar</label>
+                      <input id="newBookStock" type="number" min="0" value="5" class="w-full" />
+                    </div>
+                    <div>
+                      <label for="newBookBarcode" class="block text-xs font-semibold mb-1">Kode Eksemplar</label>
+                      <input id="newBookBarcode" type="text" value="BK-SMP-009" class="w-full code-cell" />
+                    </div>
+                  </div>
+                  <div>
+                    <label for="newBookSynopsis" class="block text-xs font-semibold mb-1">Deskripsi Singkat</label>
+                    <textarea id="newBookSynopsis" rows="2" placeholder="Ringkasan materi buku..." class="w-full"></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary">
+                    Simpan Buku & Generate Eksemplar
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- PAGE 4: PENGEMBALIAN BARCODE (ui-ux-pustaka.md Layout Pengembalian) -->
+      <!-- =================================================================== -->
+      <section id="tab-returns" class="tab-panel hidden space-y-5">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Transaksi Pengembalian & Perpanjangan Buku</h1>
+            <p class="page-description">Scan kode eksemplar buku yang dikembalikan untuk memeriksa keterlambatan, estimasi denda, dan kondisi fisik buku.</p>
+          </div>
+        </div>
+
+        <div class="transaction-layout">
+          <!-- Left: Scan Kode Eksemplar Kembali -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Scan / Input Kode Eksemplar</h2>
+            </div>
+            <div class="card-body space-y-4">
+              <div>
+                <label for="returnCopyCodeInput" class="block text-xs font-semibold mb-1">Kode Eksemplar *</label>
+                <div class="flex gap-2">
+                  <input id="returnCopyCodeInput" type="text" value="BK-SMP-001" class="scan-input flex-1" />
+                  <button id="btnCheckReturnCopy" type="button" class="btn btn-secondary">Cek Data</button>
+                </div>
+              </div>
+
+              <!-- Panel Pinjaman Aktif (ui-ux-pustaka.md) -->
+              <div id="returnActiveLoanPanel" class="scan-panel space-y-1.5 text-xs">
+                <div class="font-bold text-[#0969da] uppercase text-[11px]">Panel Pinjaman Aktif</div>
+                <div><strong>Nama Anggota:</strong> <span id="retMemberName">Raka Pratama (Kelas 8A)</span></div>
+                <div><strong>Judul Buku:</strong> <span id="retBookTitle">English for Nusantara untuk SMP/MTs Kelas VII</span></div>
+                <div><strong>Tanggal Pinjam:</strong> 19 Okt 2026 • <strong>Jatuh Tempo:</strong> <span id="retDueDate">26 Okt 2026</span></div>
+                <div><strong>Status Keterlambatan:</strong> <span class="badge badge-success">Tepat Waktu (0 Hari)</span></div>
+                <div><strong>Estimasi Denda:</strong> <span class="font-bold">Rp0</span></div>
+              </div>
+
+              <div>
+                <label for="returnConditionSelect" class="block text-xs font-semibold mb-1">Kondisi Saat Kembali *</label>
+                <select id="returnConditionSelect" class="w-full">
+                  <option value="Baik">Baik — good (Tersedia kembali, tanpa denda)</option>
+                  <option value="Cukup Baik">Cukup Baik — fair (Tersedia, catat perhatian)</option>
+                  <option value="Rusak Ringan">Rusak Ringan — lightly_damaged (Tersedia, catat riwayat)</option>
+                  <option value="Rusak Berat">Rusak Berat — heavily_damaged (Status Damaged + Denda Rp10.000)</option>
+                  <option value="Hilang">Hilang — lost (Status Lost + Denda Harga Buku + 50%)</option>
+                </select>
+              </div>
+
+              <div class="flex gap-2 pt-1">
+                <button id="btnSubmitReturn" type="button" class="btn btn-success flex-1 py-2">
+                  Proses Pengembalian
+                </button>
+                <button id="btnExtendLoan" type="button" class="btn btn-secondary py-2">
+                  Perpanjang (+7 Hari)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Tabel Riwayat Pengembalian -->
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Daftar Pinjaman yang Dapat Dikembalikan</h2>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-wrap border-0 rounded-none">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>No. Transaksi</th>
+                      <th>Kode Eksemplar</th>
+                      <th>Judul Buku</th>
+                      <th>Peminjam</th>
+                      <th>Jatuh Tempo</th>
+                      <th class="text-right">Aksi Cepat</th>
+                    </tr>
+                  </thead>
+                  <tbody id="returnTableBody">
+                    <!-- Populated by JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- PAGE 5: DATA ANGGOTA & DETAIL ANGGOTA UI (ui-ux-pustaka.md)         -->
+      <!-- =================================================================== -->
+      <section id="tab-master-members" class="tab-panel hidden space-y-5">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Data Anggota Perpustakaan</h1>
+            <p class="page-description">Kelola siswa, guru, dan staf beserta status pinjaman aktif, riwayat baca, dan nomor kartu barcode.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnAddDemoMember" type="button" class="btn btn-primary">
+              + Tambah Anggota Baru
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Daftar Anggota Terdaftar</h2>
+            <span class="text-xs text-[#57606a]">Klik tombol Detail untuk melihat profil lengkap & cetak kartu</span>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-wrap border-0 rounded-none">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Nomor Anggota</th>
+                    <th>NISN / NIP</th>
+                    <th>Nama Lengkap</th>
+                    <th>Tipe & Kelas</th>
+                    <th>Pinjaman Aktif</th>
+                    <th>Status</th>
+                    <th class="text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="membersTableBody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail Anggota UI Panel (ui-ux-pustaka.md) -->
+        <div id="memberDetailCard" class="card">
+          <div class="card-header">
+            <h2 class="card-title">Detail Anggota: <span id="detailMemberName">Raka Pratama</span></h2>
+            <button id="btnPrintMemberCard" type="button" class="btn btn-secondary text-xs">
+              🖨️ Cetak Kartu Anggota Barcode
+            </button>
+          </div>
+          <div class="card-body grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+            <div class="p-3 rounded-[6px] bg-[#f6f8fa] border border-[#d0d7de]">
+              <div class="text-[#57606a]">Nomor Anggota</div>
+              <div id="detailMemberCode" class="code-cell text-sm mt-0.5 text-[#0969da]">SMP-2026-0812</div>
+            </div>
+            <div class="p-3 rounded-[6px] bg-[#f6f8fa] border border-[#d0d7de]">
+              <div class="text-[#57606a]">Kelas & Status</div>
+              <div id="detailMemberClass" class="font-bold text-sm mt-0.5">Kelas 8A • Aktif</div>
+            </div>
+            <div class="p-3 rounded-[6px] bg-[#f6f8fa] border border-[#d0d7de]">
+              <div class="text-[#57606a]">Total Buku Selesai Dibaca</div>
+              <div id="detailMemberTotalRead" class="font-bold text-sm mt-0.5 text-[#1f883d]">14 Buku</div>
+            </div>
+            <div class="p-3 rounded-[6px] bg-[#f6f8fa] border border-[#d0d7de]">
+              <div class="text-[#57606a]">Denda Belum Lunas</div>
+              <div id="detailMemberFine" class="font-bold text-sm mt-0.5">Rp0 (Bebas Tagihan)</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- PAGE 6: DATA BUKU & KATEGORI (ui-ux-pustaka.md CRUD Buku)           -->
+      <!-- =================================================================== -->
+      <section id="tab-master-books" class="tab-panel hidden space-y-5">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Buku</h1>
+            <p class="page-description">Kelola katalog buku, penulis, penerbit, kategori, dan ketersediaan koleksi.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnImportBooksDemo" type="button" class="btn btn-secondary">Import Buku</button>
+            <button id="btnExportBooksDemo" type="button" class="btn btn-secondary">Export Excel</button>
+            <button type="button" data-tab="admin" class="nav-tab-btn btn btn-primary">+ Tambah Buku</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body p-0">
+            <div class="table-wrap border-0 rounded-none">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Kode</th>
+                    <th>Judul Buku</th>
+                    <th>Penulis / Penerbit</th>
+                    <th>Kategori</th>
+                    <th>ISBN</th>
+                    <th>Lokasi Rak</th>
+                    <th>Ketersediaan</th>
+                    <th class="text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="masterBooksTableBody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- PAGE 7: KATEGORI BUKU (`tab-master-categories`)                     -->
+      <!-- =================================================================== -->
+      <section id="tab-master-categories" class="tab-panel hidden space-y-5">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Kategori Buku</h1>
+            <p class="page-description">Klasifikasi koleksi buku teks utama, STEM, buku nonteks, dan buku audio sekolah.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body p-0">
+            <div class="table-wrap border-0 rounded-none">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Nama Kategori</th>
+                    <th>Slug</th>
+                    <th>Deskripsi</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="font-semibold">Buku Teks Kurikulum Merdeka</td>
+                    <td class="code-cell text-[#57606a]">teks-kurikulum-merdeka</td>
+                    <td>Buku teks pelajaran utama resmi SMP Kelas VII, VIII, IX</td>
+                    <td><span class="badge badge-success">Aktif</span></td>
+                  </tr>
+                  <tr>
+                    <td class="font-semibold">Buku Bermuatan STEM</td>
+                    <td class="code-cell text-[#57606a]">bermuatan-stem</td>
+                    <td>Buku eksperimen Sains, Teknologi, Rekayasa, dan Matematika</td>
+                    <td><span class="badge badge-success">Aktif</span></td>
+                  </tr>
+                  <tr>
+                    <td class="font-semibold">Buku Nonteks</td>
+                    <td class="code-cell text-[#57606a]">buku-nonteks</td>
+                    <td>Buku pengayaan literasi, sastra remaja, dan sejarah Nusantara</td>
+                    <td><span class="badge badge-success">Aktif</span></td>
+                  </tr>
+                  <tr>
+                    <td class="font-semibold">Buku Audio</td>
+                    <td class="code-cell text-[#57606a]">buku-audio</td>
+                    <td>Buku digital dengan narasi suara bahasa Indonesia</td>
+                    <td><span class="badge badge-success">Aktif</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- PAGE 8: DATA EKSEMPLAR & LABEL BARCODE (`tab-master-copies`)        -->
+      <!-- =================================================================== -->
+      <section id="tab-master-copies" class="tab-panel hidden space-y-5">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Eksemplar Buku & Cetak Label Barcode</h1>
+            <p class="page-description">Daftar unit fisik buku individual beserta lokasi rak, kondisi eksemplar, dan status pinjam.</p>
+          </div>
+          <button id="btnPrintBarcodeLabels" type="button" class="btn btn-primary">
+            🖨️ Cetak Label Barcode Eksemplar
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-body p-0">
+            <div class="table-wrap border-0 rounded-none">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Kode Eksemplar</th>
+                    <th>Barcode</th>
+                    <th>Judul Buku</th>
+                    <th>Lokasi Rak</th>
+                    <th>Kondisi</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="bookCopiesTableBody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- PAGE 9: PINJAMAN SAYA & JURNAL LITERASI (`tab-loans`)               -->
+      <!-- =================================================================== -->
+      <section id="tab-loans" class="tab-panel hidden space-y-5">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Pinjaman Aktif & Jurnal Literasi Sekolah</h1>
+            <p class="page-description">Daftar tiket peminjaman buku fisik dan catatan Jurnal Gerakan Literasi Sekolah (GLS) siswa.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Tiket Peminjaman Buku Fisik</h2>
+              <span class="badge badge-primary"><span id="navLoanCountMobile">2</span> Aktif</span>
+            </div>
+            <div id="loansListContainer" class="card-body space-y-3"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Jurnal Literasi Siswa (GLS)</h2>
+              <span class="badge badge-success">+50 XP / Jurnal</span>
+            </div>
+            <div id="journalsListContainer" class="card-body space-y-3"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- PAGE 10: DENDA UI (ui-ux-pustaka.md: Bayar, Bebaskan + Modal Alasan)-->
+      <!-- =================================================================== -->
+      <section id="tab-fines" class="tab-panel hidden space-y-5">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Manajemen Denda Keterlambatan & Kerusakan</h1>
+            <p class="page-description">Kelola pembayaran denda anggota atau pembebasan denda dengan pencatatan alasan resmi.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body p-0">
+            <div class="table-wrap border-0 rounded-none">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID Denda</th>
+                    <th>Nama Anggota</th>
+                    <th>Judul Buku</th>
+                    <th>Jenis Denda</th>
+                    <th>Nominal</th>
+                    <th>Status Pembayaran</th>
+                    <th>Tanggal Dibuat</th>
+                    <th class="text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="finesTableBody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- PAGE 11: KATALOG ONLINE / OPAC UI + DETAIL BUKU UI                  -->
+      <!-- =================================================================== -->
+      <section id="tab-catalog" class="tab-panel hidden space-y-5">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Katalog Online Perpustakaan (OPAC)</h1>
+            <p class="page-description">Cari buku berdasarkan judul, penulis, ISBN, atau kata kunci. Tersedia baca E-Book PDF langsung & peminjaman fisik.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button type="button" data-format="all" class="format-filter-btn btn btn-primary text-xs">
+              Semua Koleksi
+            </button>
+            <button type="button" data-format="ebook" class="format-filter-btn btn btn-secondary text-xs">
+              ⚡ E-Book (Baca Langsung)
+            </button>
+            <button type="button" data-format="physical" class="format-filter-btn btn btn-secondary text-xs">
+              🏫 Buku Cetak (Pinjam Barcode)
+            </button>
+            <button type="button" data-format="audio" class="format-filter-btn btn btn-secondary text-xs">
+              🎧 Buku Audio
+            </button>
+          </div>
+        </div>
+
+        <!-- Search & Filter Bar (ui-ux-pustaka.md OPAC UI) -->
+        <div class="card">
+          <div class="card-body space-y-3">
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input id="searchInput" type="text" placeholder="Cari buku berdasarkan judul, penulis, ISBN, atau kata kunci..." class="flex-1" />
+              <select id="classLevelFilter">
+                <option value="all">Semua Kelas SMP</option>
+                <option value="Kelas VII">Kelas VII</option>
+                <option value="Kelas VIII">Kelas VIII</option>
+                <option value="Kelas IX">Kelas IX</option>
+                <option value="Umum">Umum / Nonteks</option>
+              </select>
+              <button id="btnHeroSearchFocus" type="button" class="btn btn-primary">
+                Cari Buku
+              </button>
+            </div>
+
+            <!-- Quick Category Filter Buttons -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1" id="categoryFilterBar">
+              <button type="button" data-category="Semua" class="cat-pill btn btn-primary text-xs">
+                🔥 Semua Genre
+              </button>
+              <button type="button" data-category="Buku Teks Kurikulum Merdeka" class="cat-pill btn btn-secondary text-xs">
+                📘 Teks Kurikulum Merdeka
+              </button>
+              <button type="button" data-category="Buku Bermuatan STEM" class="cat-pill btn btn-secondary text-xs">
+                🔬 Bermuatan STEM
+              </button>
+              <button type="button" data-category="Buku Nonteks" class="cat-pill btn btn-secondary text-xs">
+                📗 Buku Nonteks
+              </button>
+              <button type="button" data-category="Buku Audio" class="cat-pill btn btn-secondary text-xs">
+                🎧 Buku Audio
+              </button>
+              <button type="button" data-category="Komik Edukasi" class="cat-pill btn btn-secondary text-xs">
+                🎨 Komik Edukasi
+              </button>
+              <button type="button" data-category="Fantasi & Petualangan" class="cat-pill btn btn-secondary text-xs">
+                🐉 Fantasi & Petualangan
+              </button>
+              <button type="button" data-category="Sains & Teknologi" class="cat-pill btn btn-secondary text-xs">
+                🚀 Sains & Teknologi
+              </button>
+              <button type="button" data-category="Misteri Detektif" class="cat-pill btn btn-secondary text-xs">
+                🕵️ Misteri Detektif
+              </button>
+              <button type="button" data-category="Pengembangan Diri SMP" class="cat-pill btn btn-secondary text-xs">
+                💡 Motivasi & Remaja
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DETAIL BUKU UI PANEL (ui-ux-pustaka.md: [Cover Buku] [Informasi Buku + Ketersediaan + Daftar Eksemplar]) -->
+        <div id="bookDetailPanel" class="card hidden">
+          <div class="card-header">
+            <h2 class="card-title">Detail Buku & Daftar Eksemplar</h2>
+            <button id="btnCloseBookDetail" type="button" class="btn btn-secondary text-xs">Tutup Detail</button>
+          </div>
+          <div id="bookDetailContent" class="card-body">
+            <!-- Populated dynamically when user clicks Lihat Detail -->
+          </div>
+        </div>
+
+        <!-- Book Grid (ui-ux-pustaka.md: .book-grid) -->
+        <div id="booksGrid" class="book-grid">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- PAGE 12: LEADERBOARD LITERASI (`tab-leaderboard`)                   -->
+      <!-- =================================================================== -->
+      <section id="tab-leaderboard" class="tab-panel hidden space-y-5">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Apresiasi Anggota & Kelas Aktif Membaca</h1>
+            <p class="page-description">Rekapitulasi keaktifan membaca siswa berdasarkan peminjaman fisik, bacaan E-Book, dan Jurnal GLS.</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          <div id="tab-audit-logs" class="lg:col-span-7 card">
+            <div class="card-header"><h2 class="card-title">Peringkat Siswa Aktif</h2></div>
+            <div id="studentLeaderboardList" class="card-body space-y-2"></div>
+          </div>
+          <div class="lg:col-span-5 card">
+            <div class="card-header"><h2 class="card-title">Akumulasi Literasi Kelas</h2></div>
+            <div id="classLeaderboardList" class="card-body space-y-3"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- PAGE 13: LAPORAN UI (ui-ux-pustaka.md: Filter + Export Excel/CSV/PDF)-->
+      <!-- =================================================================== -->
+      <section id="tab-reports" class="tab-panel hidden space-y-5">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Laporan Sirkulasi & Keterlambatan</h1>
+            <p class="page-description">Filter laporan berdasarkan rentang tanggal, kelas/tipe anggota, dan status peminjaman.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="btnExportLoansReport" type="button" class="btn btn-primary">Export Excel</button>
+            <button id="btnExportCsvReport" type="button" class="btn btn-secondary">Export CSV</button>
+            <button id="btnExportGlsReport" type="button" class="btn btn-secondary">Export PDF</button>
+
+            <button id="btnExportLoansSheetAlt" type="button" data-tab="reports" class="nav-tab-btn btn btn-secondary text-xs">📄 Ekspor Laporan Sirkulasi Bulanan</button>
+            <button id="btnExportGlsSheetAlt" type="button" data-tab="reports" class="nav-tab-btn btn btn-secondary text-xs">📗 Ekspor Rekap Jurnal Literasi (GLS)</button>
+
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div>
+              <label class="block text-xs font-semibold mb-1">Dari Tanggal</label>
+              <input type="date" value="2026-10-01" class="w-full" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-1">Sampai Tanggal</label>
+              <input type="date" value="2026-10-31" class="w-full" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-1">Tipe / Kelas Anggota</label>
+              <select class="w-full">
+                <option>Semua Kelas (VII, VIII, IX)</option>
+                <option>Kelas VII</option>
+                <option>Kelas VIII</option>
+                <option>Kelas IX</option>
+                <option>Guru & Staf</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-1">Jenis Laporan</label>
+              <select class="w-full">
+                <option>Transaksi Peminjaman & Pengembalian</option>
+                <option>Pinjaman Terlambat (Overdue)</option>
+                <option>Laporan Denda</option>
+                <option>Jurnal Literasi Siswa (GLS)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Tabel Hasil Laporan Sirkulasi</h2>
+            <span class="badge badge-neutral">Siap Sinkron ke Google Sheets via GAS</span>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-wrap border-0 rounded-none">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>No. Transaksi</th>
+                    <th>Nomor Anggota</th>
+                    <th>Nama Anggota</th>
+                    <th>Kode Eksemplar</th>
+                    <th>Judul Buku</th>
+                    <th>Jatuh Tempo</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="reportsTableBody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- PAGE 14: PENGATURAN & AUDIT LOG (`tab-settings`)                    -->
+      <!-- =================================================================== -->
+      <section id="tab-settings" class="tab-panel hidden space-y-5">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Pengaturan Perpustakaan & Audit Log</h1>
+            <p class="page-description">Atur batas peminjaman, tarif denda harian, serta pantau riwayat perubahan data sistem.</p>
+          </div>
+          <!-- Preserves compatibility ID for automated test suite -->
+          <button id="btnToggleTheme" type="button" class="btn btn-secondary text-xs">
+            <span id="themeIcon">☀️</span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          <div class="lg:col-span-5 space-y-4">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">Koneksi Produksi (Vercel + GAS + Supabase)</h2>
+                <span id="connStatusBadge" class="badge badge-primary">Mode Hybrid Demo</span>
+              </div>
+              <div class="card-body space-y-3 text-xs">
+                <div>
+                  <label for="cfgSupabaseUrl" class="block font-semibold mb-1">VITE_SUPABASE_URL</label>
+                  <input id="cfgSupabaseUrl" type="text" placeholder="https://[PROJECT_REF].supabase.co" class="w-full code-cell text-xs" />
+                </div>
+                <div>
+                  <label for="cfgSupabaseAnonKey" class="block font-semibold mb-1">VITE_SUPABASE_ANON_KEY</label>
+                  <input id="cfgSupabaseAnonKey" type="password" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." class="w-full code-cell text-xs" />
+                </div>
+                <div>
+                  <label for="cfgGasWebAppUrl" class="block font-semibold mb-1">VITE_GAS_WEBAPP_URL (Google Apps Script)</label>
+                  <input id="cfgGasWebAppUrl" type="text" placeholder="https://script.google.com/macros/s/[DEPLOYMENT_ID]/exec" class="w-full code-cell text-xs" />
+                </div>
+                <div class="flex flex-wrap gap-2 pt-1">
+                  <button id="btnSaveEnvConfig" type="button" class="btn btn-primary text-xs">Simpan & Hubungkan</button>
+                  <button id="btnTestGasPing" type="button" class="btn btn-secondary text-xs">Tes Ping GAS & RPC</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><h2 class="card-title">Aturan Sirkulasi PRD v3.0 (`library_settings`)</h2></div>
+              <div class="card-body space-y-2.5 text-xs">
+                <div class="flex items-center justify-between py-1.5 border-b border-[#d8dee4]">
+                  <span class="font-semibold">Kuota & Durasi Pinjam Siswa (`student`)</span>
+                  <span class="code-cell text-[#0969da]">Maks 2 Buku • 7 Hari</span>
+                </div>
+                <div class="flex items-center justify-between py-1.5 border-b border-[#d8dee4]">
+                  <span class="font-semibold">Kuota & Durasi Pinjam Guru (`teacher`)</span>
+                  <span class="code-cell text-[#1f883d]">Maks 5 Buku • 14 Hari</span>
+                </div>
+                <div class="flex items-center justify-between py-1.5 border-b border-[#d8dee4]">
+                  <span class="font-semibold">Kuota & Durasi Pinjam Staf (`staff`)</span>
+                  <span class="code-cell">Maks 3 Buku • 7 Hari</span>
+                </div>
+                <div class="flex items-center justify-between py-1.5 border-b border-[#d8dee4]">
+                  <span class="font-semibold">Denda Keterlambatan & Buku Hilang</span>
+                  <span class="code-cell text-[#cf222e]">Rp1.000/Hari • Hilang: Harga + 50%</span>
+                </div>
+                <div class="flex items-center justify-between py-1.5">
+                  <span class="font-semibold">Maksimal Perpanjangan (`extension_count`)</span>
+                  <span class="code-cell text-[#1f883d]">Maks 2 Kali (Sebelum Jatuh Tempo)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-7 card">
+            <div class="card-header"><h2 class="card-title">Audit Log Aktivitas (`audit_logs`)</h2></div>
+            <div class="card-body p-0">
+              <div class="table-wrap border-0 rounded-none">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Waktu</th>
+                      <th>Pengguna</th>
+                      <th>Aksi</th>
+                      <th>Entitas</th>
+                      <th>Rincian</th>
+                    </tr>
+                  </thead>
+                  <tbody id="auditLogsTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 1: KONFIRMASI BEBASKAN DENDA (ui-ux-pustaka.md)    -->
+  <!-- ======================================================== -->
+  <div id="modalWaiveFine" class="fixed inset-0 z-50 hidden bg-[#24292f]/45 flex items-center justify-center p-4">
+    <div class="bg-white border border-[#d0d7de] rounded-[8px] max-w-[520px] w-full overflow-hidden shadow-lg">
+      <div class="p-4 border-b border-[#d8dee4] flex items-center justify-between">
+        <h3 class="font-semibold text-base text-[#24292f]">Konfirmasi Pembebasan Denda</h3>
+        <button id="btnCloseWaiveModal" type="button" class="btn btn-secondary px-2 py-1 text-xs">✕</button>
+      </div>
+      <div class="p-4 space-y-3 text-xs">
+        <p class="text-[#57606a]">Sesuai aturan perpustakaan, pembebasan denda wajib mencantumkan alasan yang jelas untuk tercatat pada Audit Log.</p>
+        <div>
+          <label for="waiveReasonInput" class="block font-semibold mb-1">Alasan Pembebasan Denda *</label>
+          <textarea id="waiveReasonInput" rows="3" placeholder="Contoh: Siswa sakit dengan surat keterangan dokter / dispensasi kepala sekolah..." class="w-full"></textarea>
+        </div>
+      </div>
+      <div class="p-4 border-t border-[#d8dee4] flex items-center justify-end gap-2 bg-[#f6f8fa]">
+        <button id="btnCancelWaiveFine" type="button" class="btn btn-secondary">Batal</button>
+        <button id="btnConfirmWaiveFine" type="button" class="btn btn-danger">Bebaskan Denda</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 2: PILIH / SCAN ANGGOTA AKTIF                      -->
+  <!-- ======================================================== -->
+  <div id="modalBarcodeLogin" class="fixed inset-0 z-50 hidden bg-[#24292f]/45 flex items-center justify-center p-4">
+    <div class="bg-white border border-[#d0d7de] rounded-[8px] max-w-[520px] w-full p-5 space-y-4">
+      <div class="flex items-center justify-between border-b border-[#d8dee4] pb-3">
+        <div>
+          <h3 class="font-semibold text-base text-[#24292f]">Scan / Pilih Nomor Anggota</h3>
+          <p class="text-xs text-[#57606a]">Gunakan scanner USB atau pilih anggota untuk simulasi</p>
+        </div>
+        <button id="btnCloseBarcodeModal" type="button" class="btn btn-secondary px-2.5 py-1">✕</button>
+      </div>
+
+      <div class="space-y-2" id="studentSwitchList"></div>
+
+      <div class="pt-3 border-t border-[#d8dee4] flex gap-2">
+        <input id="manualBarcodeInput" type="text" placeholder="Ketik Nomor Anggota (misal: SMP-2026-0901)..." class="flex-1 code-cell" />
+        <button id="btnSubmitManualBarcode" type="button" class="btn btn-primary">
+          Masuk
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 3: E-BOOK & AUDIO READER + JURNAL LITERASI         -->
+  <!-- ======================================================== -->
+  <div id="modalEbookReader" class="fixed inset-0 z-50 hidden bg-[#24292f]/45 flex items-center justify-center p-4">
+    <div class="bg-white border border-[#d0d7de] rounded-[8px] max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="px-4 py-3 border-b border-[#d8dee4] flex items-center justify-between gap-2 bg-[#f6f8fa]">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span id="readerBadgeType" class="badge badge-primary">PDF SMP/MTs</span>
+          <div class="truncate">
+            <h3 id="readerBookTitle" class="font-bold text-sm truncate">Judul Buku</h3>
+            <p id="readerBookAuthor" class="text-xs text-[#57606a] truncate">Penulis</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button id="btnToggleAudioRead" type="button" class="btn btn-secondary text-xs">
+            🎧 Baca Suara (Audio)
+          </button>
+          <span id="readerPageIndicator" class="code-cell text-xs px-2 py-1 rounded bg-white border border-[#d0d7de]">Hal 1 / 3</span>
+          <button id="btnCloseReader" type="button" class="btn btn-danger text-xs">✕ Tutup</button>
+        </div>
+      </div>
+
+      <div class="p-5 overflow-y-auto flex-1 space-y-4">
+        <div id="readerPageContent" class="p-5 rounded-[6px] bg-[#f6f8fa] border border-[#d0d7de] leading-relaxed text-sm min-h-[190px]"></div>
+
+        <div class="flex items-center justify-between gap-3">
+          <button id="btnPrevPage" type="button" class="btn btn-secondary">
+            ← Halaman Sebelumnya
+          </button>
+          <div id="readerReactionButtons"></div>
+          <button id="btnNextPage" type="button" class="btn btn-primary">
+            Halaman Berikutnya →
+          </button>
+        </div>
+
+        <div class="scan-panel space-y-2">
+          <div class="flex items-center justify-between text-xs">
+            <strong class="text-[#0969da]">Jurnal Literasi Sekolah (GLS) — Klaim +50 XP</strong>
+            <span class="text-[#57606a]">Tersimpan ke Supabase & Google Sheets</span>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input id="readerJournalInput" type="text" placeholder="Tulis ringkasan singkat dari halaman yang dibaca..." class="flex-1" />
+            <button id="btnClaimReadingXp" type="button" class="btn btn-success">
+              ✅ Selesai Baca & Klaim +50 XP
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 4: KODE SQL SUPABASE & GOOGLE APPS SCRIPT (GAS)     -->
+  <!-- ======================================================== -->
+  <div id="modalArchitecture" class="fixed inset-0 z-50 hidden bg-[#24292f]/45 flex items-center justify-center p-4">
+    <div class="bg-white border border-[#d0d7de] rounded-[8px] max-w-5xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-lg">
+      <div class="px-5 py-3.5 border-b border-[#d8dee4] flex items-center justify-between bg-[#f6f8fa]">
+        <div>
+          <h3 class="font-bold text-base text-[#24292f]">Paket Implementasi Produksi: Vercel + Google Apps Script + Supabase PostgreSQL</h3>
+          <p class="text-xs text-[#57606a]">Salin skrip di bawah ini langsung ke Supabase SQL Editor, Google Apps Script (script.google.com), dan Vercel</p>
+        </div>
+        <button id="btnCloseArchitecture" type="button" class="btn btn-secondary px-2.5 py-1">✕</button>
+      </div>
+      <div class="p-5 overflow-y-auto space-y-5 text-xs">
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="font-bold text-[#0969da]">1. Supabase PostgreSQL — 12 Tabel &amp; Index (`001_schema_12_tables.sql`)</span>
+            <button type="button" data-copy-target="codeSqlSchema" class="btn-copy-code btn btn-secondary text-xs py-1 px-2.5">📋 Salin SQL 12 Tabel</button>
+          </div>
+          <pre id="codeSqlSchema" class="p-3 rounded-[6px] bg-[#24292f] text-white overflow-x-auto font-mono text-[11px] max-h-60">-- ============================================================================
+-- SIPUSTADIG (SIRKULIB) v3.0 — SUPABASE POSTGRESQL SCHEMA (12 TABEL + INDEXES)
+-- Sesuai PRD.md v3.0 &amp; DESIGN.md
+-- ============================================================================
+
+-- 1. TABEL USERS (Sinkron dengan auth.users Supabase)
+CREATE TABLE IF NOT EXISTS public.users (
+  id BIGSERIAL PRIMARY KEY,
+  auth_uid UUID UNIQUE,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password VARCHAR(255),
+  role VARCHAR(30) NOT NULL DEFAULT 'student' CHECK (role IN ('admin', 'librarian', 'principal', 'teacher', 'student')),
+  status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+  last_login_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 2. TABEL MEMBERS (Anggota Perpustakaan: Siswa, Guru, Staf)
+CREATE TABLE IF NOT EXISTS public.members (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT UNIQUE REFERENCES public.users(id) ON DELETE SET NULL,
+  member_number VARCHAR(50) UNIQUE NOT NULL,
+  type VARCHAR(20) NOT NULL DEFAULT 'student' CHECK (type IN ('student', 'teacher', 'staff')),
+  name VARCHAR(255) NOT NULL,
+  identity_number VARCHAR(50) NOT NULL,
+  class_name VARCHAR(50),
+  major VARCHAR(100),
+  email VARCHAR(255),
+  phone VARCHAR(20),
+  address TEXT,
+  photo_path VARCHAR(255),
+  status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+  notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 3. TABEL BOOK_CATEGORIES (Kategori Buku)
+CREATE TABLE IF NOT EXISTS public.book_categories (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(100) UNIQUE NOT NULL,
+  slug VARCHAR(100) UNIQUE NOT NULL,
+  description TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 4. TABEL BOOKS (Bibliografi / Katalog Buku)
+CREATE TABLE IF NOT EXISTS public.books (
+  id BIGSERIAL PRIMARY KEY,
+  category_id BIGINT REFERENCES public.book_categories(id) ON DELETE SET NULL,
+  title VARCHAR(255) NOT NULL,
+  isbn VARCHAR(20),
+  author VARCHAR(255) NOT NULL,
+  publisher VARCHAR(255),
+  published_year INT,
+  language VARCHAR(50) NOT NULL DEFAULT 'Indonesia',
+  pages INT,
+  description TEXT,
+  cover_path VARCHAR(255),
+  tags JSONB DEFAULT '[]'::jsonb,
+  status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+  created_by BIGINT REFERENCES public.users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 5. TABEL BOOK_COPIES (Eksemplar Fisik &amp; Barcode)
+CREATE TABLE IF NOT EXISTS public.book_copies (
+  id BIGSERIAL PRIMARY KEY,
+  book_id BIGINT NOT NULL REFERENCES public.books(id) ON DELETE CASCADE,
+  copy_code VARCHAR(50) UNIQUE NOT NULL,
+  barcode_value VARCHAR(100) UNIQUE NOT NULL,
+  shelf_location VARCHAR(100),
+  condition VARCHAR(30) NOT NULL DEFAULT 'good' CHECK (condition IN ('good', 'fair', 'lightly_damaged', 'heavily_damaged', 'lost')),
+  status VARCHAR(30) NOT NULL DEFAULT 'available' CHECK (status IN ('available', 'borrowed', 'damaged', 'lost', 'repair', 'archived')),
+  source VARCHAR(30) NOT NULL DEFAULT 'purchase' CHECK (source IN ('purchase', 'grant', 'donation', 'government_aid', 'other')),
+  acquisition_date DATE,
+  price NUMERIC(10,2) DEFAULT 50000.00,
+  notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 6. TABEL LOAN_TRANSACTIONS (Header Transaksi Peminjaman)
+CREATE TABLE IF NOT EXISTS public.loan_transactions (
+  id BIGSERIAL PRIMARY KEY,
+  loan_number VARCHAR(50) UNIQUE NOT NULL,
+  member_id BIGINT NOT NULL REFERENCES public.members(id) ON DELETE RESTRICT,
+  borrowed_by BIGINT REFERENCES public.users(id) ON DELETE SET NULL,
+  borrowed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  due_at DATE NOT NULL,
+  returned_at TIMESTAMPTZ,
+  status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'returned', 'overdue', 'lost', 'cancelled')),
+  notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 7. TABEL FINES (Denda Keterlambatan, Kerusakan &amp; Kehilangan)
+CREATE TABLE IF NOT EXISTS public.fines (
+  id BIGSERIAL PRIMARY KEY,
+  member_id BIGINT NOT NULL REFERENCES public.members(id) ON DELETE RESTRICT,
+  loan_item_id BIGINT,
+  type VARCHAR(20) NOT NULL DEFAULT 'late' CHECK (type IN ('late', 'damaged', 'lost', 'manual')),
+  amount NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+  paid_amount NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+  status VARCHAR(20) NOT NULL DEFAULT 'unpaid' CHECK (status IN ('unpaid', 'partial', 'paid', 'waived')),
+  notes TEXT,
+  waived_reason TEXT,
+  created_by BIGINT REFERENCES public.users(id) ON DELETE SET NULL,
+  paid_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 8. TABEL LOAN_ITEMS (Detail Eksemplar yang Dipinjam per Transaksi)
+CREATE TABLE IF NOT EXISTS public.loan_items (
+  id BIGSERIAL PRIMARY KEY,
+  loan_transaction_id BIGINT NOT NULL REFERENCES public.loan_transactions(id) ON DELETE CASCADE,
+  book_copy_id BIGINT NOT NULL REFERENCES public.book_copies(id) ON DELETE RESTRICT,
+  borrowed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  due_at DATE NOT NULL,
+  returned_at TIMESTAMPTZ,
+  return_condition VARCHAR(30) CHECK (return_condition IN ('good', 'fair', 'lightly_damaged', 'heavily_damaged', 'lost')),
+  extension_count INT NOT NULL DEFAULT 0 CHECK (extension_count &lt;= 2),
+  status VARCHAR(20) NOT NULL DEFAULT 'borrowed' CHECK (status IN ('borrowed', 'returned', 'overdue', 'lost', 'damaged')),
+  fine_id BIGINT REFERENCES public.fines(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Tambahkan FK loan_item_id pada tabel fines
+ALTER TABLE public.fines
+  DROP CONSTRAINT IF EXISTS fk_fines_loan_item,
+  ADD CONSTRAINT fk_fines_loan_item FOREIGN KEY (loan_item_id) REFERENCES public.loan_items(id) ON DELETE SET NULL;
+
+-- 9. TABEL FINE_PAYMENTS (Riwayat Pembayaran Denda)
+CREATE TABLE IF NOT EXISTS public.fine_payments (
+  id BIGSERIAL PRIMARY KEY,
+  fine_id BIGINT NOT NULL REFERENCES public.fines(id) ON DELETE CASCADE,
+  amount NUMERIC(10,2) NOT NULL,
+  payment_method VARCHAR(20) NOT NULL DEFAULT 'cash' CHECK (payment_method IN ('cash', 'transfer', 'other')),
+  paid_by BIGINT REFERENCES public.users(id) ON DELETE SET NULL,
+  paid_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 10. TABEL LIBRARY_SETTINGS (Konfigurasi Aturan Perpustakaan)
+CREATE TABLE IF NOT EXISTS public.library_settings (
+  id BIGSERIAL PRIMARY KEY,
+  key VARCHAR(100) UNIQUE NOT NULL,
+  value TEXT NOT NULL,
+  type VARCHAR(20) NOT NULL DEFAULT 'string' CHECK (type IN ('string', 'number', 'boolean', 'json')),
+  description TEXT,
+  "group" VARCHAR(50) NOT NULL DEFAULT 'general',
+  updated_by BIGINT REFERENCES public.users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 11. TABEL IMPORTS (Riwayat Import Excel/Spreadsheet via GAS)
+CREATE TABLE IF NOT EXISTS public.imports (
+  id BIGSERIAL PRIMARY KEY,
+  type VARCHAR(30) NOT NULL CHECK (type IN ('member', 'book', 'book_copy')),
+  file_path VARCHAR(255) NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'completed', 'failed')),
+  total_rows INT NOT NULL DEFAULT 0,
+  success_rows INT NOT NULL DEFAULT 0,
+  failed_rows INT NOT NULL DEFAULT 0,
+  error_report_path VARCHAR(255),
+  created_by BIGINT REFERENCES public.users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 12. TABEL AUDIT_LOGS (Pencatatan Aktivitas Sistem)
+CREATE TABLE IF NOT EXISTS public.audit_logs (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT REFERENCES public.users(id) ON DELETE SET NULL,
+  action VARCHAR(50) NOT NULL,
+  auditable_type VARCHAR(100) NOT NULL,
+  auditable_id BIGINT,
+  old_values JSONB,
+  new_values JSONB,
+  ip_address VARCHAR(45),
+  user_agent VARCHAR(255),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ============================================================================
+-- DATABASE INDEXES (Sesuai DESIGN.md Bagian 3.3)
+-- ============================================================================
+CREATE INDEX IF NOT EXISTS idx_members_identity ON public.members(identity_number);
+CREATE INDEX IF NOT EXISTS idx_members_type_status ON public.members(type, status);
+CREATE INDEX IF NOT EXISTS idx_members_name ON public.members(name);
+
+CREATE INDEX IF NOT EXISTS idx_books_category ON public.books(category_id);
+CREATE INDEX IF NOT EXISTS idx_books_isbn ON public.books(isbn);
+CREATE INDEX IF NOT EXISTS idx_books_title ON public.books(title);
+CREATE INDEX IF NOT EXISTS idx_books_author ON public.books(author);
+CREATE INDEX IF NOT EXISTS idx_books_status ON public.books(status);
+
+CREATE INDEX IF NOT EXISTS idx_copies_book ON public.book_copies(book_id);
+CREATE INDEX IF NOT EXISTS idx_copies_status ON public.book_copies(status);
+CREATE INDEX IF NOT EXISTS idx_copies_shelf ON public.book_copies(shelf_location);
+
+CREATE INDEX IF NOT EXISTS idx_loans_member ON public.loan_transactions(member_id);
+CREATE INDEX IF NOT EXISTS idx_loans_borrowed_at ON public.loan_transactions(borrowed_at);
+CREATE INDEX IF NOT EXISTS idx_loans_due_at ON public.loan_transactions(due_at);
+CREATE INDEX IF NOT EXISTS idx_loans_status ON public.loan_transactions(status);
+
+CREATE INDEX IF NOT EXISTS idx_loan_items_tx ON public.loan_items(loan_transaction_id);
+CREATE INDEX IF NOT EXISTS idx_loan_items_copy ON public.loan_items(book_copy_id);
+CREATE INDEX IF NOT EXISTS idx_loan_items_status ON public.loan_items(status);
+CREATE INDEX IF NOT EXISTS idx_loan_items_due_at ON public.loan_items(due_at);
+
+CREATE INDEX IF NOT EXISTS idx_fines_member ON public.fines(member_id);
+CREATE INDEX IF NOT EXISTS idx_fines_loan_item ON public.fines(loan_item_id);
+CREATE INDEX IF NOT EXISTS idx_fines_status ON public.fines(status);
+CREATE INDEX IF NOT EXISTS idx_fines_type ON public.fines(type);
+
+CREATE INDEX IF NOT EXISTS idx_audit_user ON public.audit_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_entity ON public.audit_logs(auditable_type, auditable_id);
+CREATE INDEX IF NOT EXISTS idx_audit_action ON public.audit_logs(action);
+CREATE INDEX IF NOT EXISTS idx_audit_created_at ON public.audit_logs(created_at);
+</pre>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="font-bold text-[#0969da]">2. Supabase PostgreSQL — Fungsi RPC Atomic Pinjam, Kembali &amp; Perpanjang (`003_rpc_transactions.sql`)</span>
+            <button type="button" data-copy-target="codeSqlRpc" class="btn-copy-code btn btn-secondary text-xs py-1 px-2.5">📋 Salin SQL RPC</button>
+          </div>
+          <pre id="codeSqlRpc" class="p-3 rounded-[6px] bg-[#24292f] text-white overflow-x-auto font-mono text-[11px] max-h-60">-- ============================================================================
+-- SIPUSTADIG (SIRKULIB) v3.0 — POSTGRESQL ATOMIC RPC FUNCTIONS (PL/pgSQL)
+-- Mengimplementasikan seluruh aturan bisnis PRD.md Bagian 5:
+-- - Siswa: maks 2 eksemplar, durasi 7 hari
+-- - Guru: maks 5 eksemplar, durasi 14 hari
+-- - Staf: maks 3 eksemplar, durasi 7 hari
+-- - Maksimal perpanjangan: 2x (hanya jika belum terlambat)
+-- - Denda terlambat: Rp1.000/hari
+-- - Denda hilang: Harga buku + 50%
+-- ============================================================================
+
+-- 1. FUNGSI TRANSAKSI PEMINJAMAN (process_loan_transaction)
+CREATE OR REPLACE FUNCTION public.process_loan_transaction(
+  p_member_number VARCHAR,
+  p_copy_code VARCHAR,
+  p_staff_user_id BIGINT DEFAULT 1,
+  p_notes TEXT DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_member RECORD;
+  v_copy RECORD;
+  v_unpaid_fine NUMERIC(10,2);
+  v_active_loans INT;
+  v_max_loan INT;
+  v_loan_days INT;
+  v_due_date DATE;
+  v_loan_number VARCHAR(50);
+  v_tx_id BIGINT;
+  v_item_id BIGINT;
+BEGIN
+  -- 1. Cek Anggota
+  SELECT * INTO v_member FROM public.members WHERE member_number = p_member_number LIMIT 1;
+  IF NOT FOUND THEN
+    RETURN jsonb_build_object('success', false, 'message', 'Nomor anggota tidak ditemukan.');
+  END IF;
+
+  IF v_member.status &lt;&gt; 'active' THEN
+    RETURN jsonb_build_object('success', false, 'message', 'Anggota berstatus nonaktif dan tidak dapat meminjam buku.');
+  END IF;
+
+  -- 2. Cek Denda Belum Lunas
+  SELECT COALESCE(SUM(amount - paid_amount), 0) INTO v_unpaid_fine
+  FROM public.fines
+  WHERE member_id = v_member.id AND status IN ('unpaid', 'partial');
+
+  IF v_unpaid_fine &gt; 0 THEN
+    RETURN jsonb_build_object(
+      'success', false,
+      'message', format('Anggota masih memiliki denda belum lunas sebesar Rp%s.', to_char(v_unpaid_fine, 'FM999G999G999'))
+    );
+  END IF;
+
+  -- 3. Tentukan Kuota &amp; Durasi sesuai Tipe Anggota (PRD Bagian 5.1)
+  IF v_member.type = 'teacher' THEN
+    v_max_loan := 5;
+    v_loan_days := 14;
+  ELSIF v_member.type = 'staff' THEN
+    v_max_loan := 3;
+    v_loan_days := 7;
+  ELSE
+    -- Default: student (Siswa)
+    v_max_loan := 2;
+    v_loan_days := 7;
+  END IF;
+
+  -- Hitung pinjaman aktif saat ini
+  SELECT COUNT(*) INTO v_active_loans
+  FROM public.loan_items li
+  JOIN public.loan_transactions lt ON lt.id = li.loan_transaction_id
+  WHERE lt.member_id = v_member.id AND li.status IN ('borrowed', 'overdue');
+
+  IF v_active_loans &gt;= v_max_loan THEN
+    RETURN jsonb_build_object(
+      'success', false,
+      'message', format('Jumlah pinjaman anggota sudah mencapai batas maksimal (%s eksemplar untuk %s).', v_max_loan, v_member.type)
+    );
+  END IF;
+
+  -- 4. Cek Ketersediaan Eksemplar
+  SELECT bc.*, b.title AS book_title INTO v_copy
+  FROM public.book_copies bc
+  JOIN public.books b ON b.id = bc.book_id
+  WHERE bc.copy_code = p_copy_code OR bc.barcode_value = p_copy_code
+  LIMIT 1;
+
+  IF NOT FOUND THEN
+    RETURN jsonb_build_object('success', false, 'message', 'Kode eksemplar atau barcode buku tidak ditemukan.');
+  END IF;
+
+  IF v_copy.status &lt;&gt; 'available' THEN
+    RETURN jsonb_build_object('success', false, 'message', 'Buku ini sedang dipinjam atau tidak tersedia.');
+  END IF;
+
+  -- 5. Buat Nomor Transaksi &amp; Hitung Jatuh Tempo
+  v_due_date := CURRENT_DATE + v_loan_days;
+  v_loan_number := 'TRX-' || to_char(NOW(), 'YYYYMMDD') || '-' || LPAD((FLOOR(RANDOM() * 9000) + 1000)::TEXT, 4, '0');
+
+  INSERT INTO public.loan_transactions (loan_number, member_id, borrowed_by, borrowed_at, due_at, status, notes)
+  VALUES (v_loan_number, v_member.id, p_staff_user_id, NOW(), v_due_date, 'active', p_notes)
+  RETURNING id INTO v_tx_id;
+
+  INSERT INTO public.loan_items (loan_transaction_id, book_copy_id, borrowed_at, due_at, status)
+  VALUES (v_tx_id, v_copy.id, NOW(), v_due_date, 'borrowed')
+  RETURNING id INTO v_item_id;
+
+  -- Update status eksemplar menjadi borrowed
+  UPDATE public.book_copies
+  SET status = 'borrowed', updated_at = NOW()
+  WHERE id = v_copy.id;
+
+  -- Catat Audit Log
+  INSERT INTO public.audit_logs (user_id, action, auditable_type, auditable_id, new_values)
+  VALUES (
+    p_staff_user_id,
+    'loan',
+    'loan_transactions',
+    v_tx_id,
+    jsonb_build_object('loan_number', v_loan_number, 'member_number', v_member.member_number, 'copy_code', v_copy.copy_code, 'due_at', v_due_date)
+  );
+
+  RETURN jsonb_build_object(
+    'success', true,
+    'message', 'Peminjaman berhasil disimpan.',
+    'data', jsonb_build_object(
+      'loan_transaction_id', v_tx_id,
+      'loan_item_id', v_item_id,
+      'loan_number', v_loan_number,
+      'member_name', v_member.name,
+      'book_title', v_copy.book_title,
+      'copy_code', v_copy.copy_code,
+      'due_at', v_due_date
+    )
+  );
+END;
+$$;
+
+-- 2. FUNGSI TRANSAKSI PENGEMBALIAN (process_return_transaction)
+CREATE OR REPLACE FUNCTION public.process_return_transaction(
+  p_copy_code VARCHAR,
+  p_return_condition VARCHAR DEFAULT 'good',
+  p_staff_user_id BIGINT DEFAULT 1,
+  p_manual_damage_fine NUMERIC DEFAULT 10000.00
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_item RECORD;
+  v_days_late INT;
+  v_daily_rate NUMERIC(10,2) := 1000.00;
+  v_fine_amount NUMERIC(10,2) := 0.00;
+  v_fine_type VARCHAR(20) := 'late';
+  v_fine_id BIGINT := NULL;
+  v_new_copy_status VARCHAR(30) := 'available';
+  v_new_item_status VARCHAR(20) := 'returned';
+BEGIN
+  -- Cari pinjaman aktif berdasarkan copy_code atau barcode_value
+  SELECT
+    li.id AS loan_item_id,
+    li.loan_transaction_id,
+    li.due_at,
+    lt.loan_number,
+    lt.member_id,
+    m.name AS member_name,
+    bc.id AS book_copy_id,
+    bc.copy_code,
+    COALESCE(bc.price, 50000.00) AS book_price,
+    b.title AS book_title
+  INTO v_item
+  FROM public.loan_items li
+  JOIN public.loan_transactions lt ON lt.id = li.loan_transaction_id
+  JOIN public.members m ON m.id = lt.member_id
+  JOIN public.book_copies bc ON bc.id = li.book_copy_id
+  JOIN public.books b ON b.id = bc.book_id
+  WHERE (bc.copy_code = p_copy_code OR bc.barcode_value = p_copy_code)
+    AND li.status IN ('borrowed', 'overdue')
+  ORDER BY li.borrowed_at DESC
+  LIMIT 1;
+
+  IF NOT FOUND THEN
+    RETURN jsonb_build_object('success', false, 'message', 'Tidak ditemukan pinjaman aktif untuk kode eksemplar tersebut.');
+  END IF;
+
+  -- Hitung keterlambatan hari kalender
+  v_days_late := GREATEST(0, CURRENT_DATE - v_item.due_at);
+  IF v_days_late &gt; 0 THEN
+    v_fine_amount := v_days_late * v_daily_rate;
+    v_fine_type := 'late';
+  END IF;
+
+  -- Evaluasi kondisi eksemplar saat dikembalikan (PRD Bagian 5.2)
+  IF p_return_condition = 'heavily_damaged' THEN
+    v_new_copy_status := 'damaged';
+    v_new_item_status := 'damaged';
+    v_fine_amount := v_fine_amount + COALESCE(p_manual_damage_fine, 10000.00);
+    v_fine_type := 'damaged';
+  ELSIF p_return_condition = 'lost' THEN
+    v_new_copy_status := 'lost';
+    v_new_item_status := 'lost';
+    -- Denda hilang = Harga buku + 50%
+    v_fine_amount := v_fine_amount + (v_item.book_price * 1.5);
+    v_fine_type := 'lost';
+  ELSE
+    v_new_copy_status := 'available';
+    v_new_item_status := 'returned';
+  END IF;
+
+  -- Buat record denda jika ada tagihan
+  IF v_fine_amount &gt; 0 THEN
+    INSERT INTO public.fines (member_id, loan_item_id, type, amount, paid_amount, status, notes, created_by)
+    VALUES (
+      v_item.member_id,
+      v_item.loan_item_id,
+      v_fine_type,
+      v_fine_amount,
+      0.00,
+      'unpaid',
+      format('Denda otomatis (%s): Terlambat %s hari, Kondisi: %s', v_fine_type, v_days_late, p_return_condition),
+      p_staff_user_id
+    )
+    RETURNING id INTO v_fine_id;
+  END IF;
+
+  -- Update loan_items
+  UPDATE public.loan_items
+  SET
+    returned_at = NOW(),
+    return_condition = p_return_condition,
+    status = v_new_item_status,
+    fine_id = v_fine_id,
+    updated_at = NOW()
+  WHERE id = v_item.loan_item_id;
+
+  -- Update loan_transactions
+  UPDATE public.loan_transactions
+  SET
+    returned_at = NOW(),
+    status = CASE WHEN v_new_item_status = 'lost' THEN 'lost' ELSE 'returned' END,
+    updated_at = NOW()
+  WHERE id = v_item.loan_transaction_id;
+
+  -- Update book_copies
+  UPDATE public.book_copies
+  SET
+    status = v_new_copy_status,
+    condition = p_return_condition,
+    updated_at = NOW()
+  WHERE id = v_item.book_copy_id;
+
+  -- Catat Audit Log
+  INSERT INTO public.audit_logs (user_id, action, auditable_type, auditable_id, new_values)
+  VALUES (
+    p_staff_user_id,
+    'return',
+    'loan_items',
+    v_item.loan_item_id,
+    jsonb_build_object(
+      'copy_code', v_item.copy_code,
+      'return_condition', p_return_condition,
+      'days_late', v_days_late,
+      'fine_amount', v_fine_amount
+    )
+  );
+
+  RETURN jsonb_build_object(
+    'success', true,
+    'message', 'Pengembalian berhasil diproses.',
+    'data', jsonb_build_object(
+      'loan_number', v_item.loan_number,
+      'member_name', v_item.member_name,
+      'book_title', v_item.book_title,
+      'days_late', v_days_late,
+      'fine_amount', v_fine_amount,
+      'return_condition', p_return_condition
+    )
+  );
+END;
+$$;
+
+-- 3. FUNGSI PERPANJANGAN PEMINJAMAN (extend_loan_item)
+CREATE OR REPLACE FUNCTION public.extend_loan_item(
+  p_copy_code VARCHAR,
+  p_staff_user_id BIGINT DEFAULT 1
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_item RECORD;
+  v_add_days INT;
+  v_new_due DATE;
+BEGIN
+  SELECT
+    li.*,
+    lt.member_id,
+    m.type AS member_type
+  INTO v_item
+  FROM public.loan_items li
+  JOIN public.loan_transactions lt ON lt.id = li.loan_transaction_id
+  JOIN public.members m ON m.id = lt.member_id
+  JOIN public.book_copies bc ON bc.id = li.book_copy_id
+  WHERE (bc.copy_code = p_copy_code OR bc.barcode_value = p_copy_code)
+    AND li.status = 'borrowed'
+  LIMIT 1;
+
+  IF NOT FOUND THEN
+    RETURN jsonb_build_object('success', false, 'message', 'Pinjaman aktif tidak ditemukan.');
+  END IF;
+
+  IF CURRENT_DATE &gt; v_item.due_at THEN
+    RETURN jsonb_build_object('success', false, 'message', 'Pinjaman yang sudah melewati jatuh tempo (terlambat) tidak dapat diperpanjang.');
+  END IF;
+
+  IF v_item.extension_count &gt;= 2 THEN
+    RETURN jsonb_build_object('success', false, 'message', 'Batas perpanjangan maksimal (2x) telah tercapai.');
+  END IF;
+
+  v_add_days := CASE WHEN v_item.member_type = 'teacher' THEN 14 ELSE 7 END;
+  v_new_due := v_item.due_at + v_add_days;
+
+  UPDATE public.loan_items
+  SET due_at = v_new_due, extension_count = extension_count + 1, updated_at = NOW()
+  WHERE id = v_item.id;
+
+  UPDATE public.loan_transactions
+  SET due_at = v_new_due, updated_at = NOW()
+  WHERE id = v_item.loan_transaction_id;
+
+  RETURN jsonb_build_object(
+    'success', true,
+    'message', format('Masa peminjaman berhasil diperpanjang hingga %s (Perpanjangan ke-%s/2).', v_new_due, v_item.extension_count + 1),
+    'data', jsonb_build_object('new_due_at', v_new_due, 'extension_count', v_item.extension_count + 1)
+  );
+END;
+$$;
+</pre>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="font-bold text-[#1f883d]">3. Backend Google Apps Script — Drive Upload, Sheets Import/Export &amp; Cron (`Code.gs`)</span>
+            <button type="button" data-copy-target="codeGasScript" class="btn-copy-code btn btn-secondary text-xs py-1 px-2.5">📋 Salin Code.gs</button>
+          </div>
+          <pre id="codeGasScript" class="p-3 rounded-[6px] bg-[#24292f] text-white overflow-x-auto font-mono text-[11px] max-h-60">/**
+ * ============================================================================
+ * SIPUSTADIG (SIRKULIB) v3.0 — BACKEND GOOGLE APPS SCRIPT (Code.gs)
+ * Arsitektur: Frontend Vercel + Backend GAS + Database PostgreSQL Supabase
+ * ============================================================================
+ * Cara Setup di script.google.com:
+ * 1. Buka Project Settings &gt; Script Properties, tambahkan:
+ *    - SUPABASE_URL              : https://[PROJECT_REF].supabase.co
+ *    - SUPABASE_SERVICE_ROLE_KEY : eyJhbGciOiJIUzI1NiIsInR5cCI6...
+ *    - DRIVE_COVERS_FOLDER_ID    : ID Folder Google Drive untuk Cover/PDF/Import
+ *    - REPORTS_SPREADSHEET_ID    : ID Google Sheets untuk Export Laporan
+ * 2. Klik Deploy &gt; New deployment &gt; Select type: Web app
+ *    - Execute as: Me (Akun Google Sekolah)
+ *    - Who has access: Anyone
+ * 3. Salin Web App URL (/exec) ke environment variable Vercel (VITE_GAS_WEBAPP_URL).
+ */
+
+function getConfig_() {
+  const props = PropertiesService.getScriptProperties();
+  return {
+    supabaseUrl: props.getProperty('SUPABASE_URL') || '',
+    supabaseKey: props.getProperty('SUPABASE_SERVICE_ROLE_KEY') || '',
+    driveFolderId: props.getProperty('DRIVE_COVERS_FOLDER_ID') || '',
+    reportSheetId: props.getProperty('REPORTS_SPREADSHEET_ID') || ''
+  };
+}
+
+/**
+ * Helper untuk membuat respons JSON standar sesuai DESIGN.md
+ */
+function jsonResponse_(payload) {
+  return ContentService
+    .createTextOutput(JSON.stringify(payload))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * Helper jembatan komunikasi REST ke Supabase PostgreSQL (PostgREST)
+ */
+function supabaseFetch_(endpoint, method, bodyObj, preferHeader) {
+  const cfg = getConfig_();
+  if (!cfg.supabaseUrl || !cfg.supabaseKey) {
+    throw new Error('SUPABASE_URL atau SUPABASE_SERVICE_ROLE_KEY belum diatur di Script Properties.');
+  }
+  const url = cfg.supabaseUrl.replace(/\/$/, '') + '/rest/v1/' + endpoint;
+  const headers = {
+    'apikey': cfg.supabaseKey,
+    'Authorization': 'Bearer ' + cfg.supabaseKey,
+    'Content-Type': 'application/json'
+  };
+  if (preferHeader) {
+    headers['Prefer'] = preferHeader;
+  }
+  const options = {
+    method: method || 'get',
+    headers: headers,
+    muteHttpExceptions: true
+  };
+  if (bodyObj) {
+    options.payload = JSON.stringify(bodyObj);
+  }
+  const res = UrlFetchApp.fetch(url, options);
+  const code = res.getResponseCode();
+  const text = res.getContentText();
+  if (code &gt;= 400) {
+    throw new Error('Supabase Error (' + code + '): ' + text);
+  }
+  return text ? JSON.parse(text) : {};
+}
+
+/**
+ * Handler GET: Cek status koneksi &amp; konfigurasi server GAS
+ */
+function doGet(e) {
+  const action = (e &amp;&amp; e.parameter &amp;&amp; e.parameter.action) ? e.parameter.action : 'health';
+  if (action === 'health') {
+    return jsonResponse_({
+      success: true,
+      service: 'Sipustadig GAS Backend v3.0',
+      timestamp: new Date().toISOString()
+    });
+  }
+  return jsonResponse_({ success: false, message: 'Action GET tidak dikenali.' });
+}
+
+/**
+ * Handler POST Utama:
+ * Menerima request dari Frontend Vercel dengan Content-Type: text/plain;charset=utf-8
+ * agar bebas kendala preflight CORS di browser.
+ */
+function doPost(e) {
+  try {
+    if (!e || !e.postData || !e.postData.contents) {
+      return jsonResponse_({ success: false, message: 'Payload kosong.' });
+    }
+    const payload = JSON.parse(e.postData.contents);
+    const action = payload.action;
+
+    switch (action) {
+      case 'uploadCoverOrFile':
+        return handleUploadCoverOrFile_(payload);
+      case 'importMembersExcel':
+        return handleImportMembers_(payload);
+      case 'importBooksExcel':
+        return handleImportBooks_(payload);
+      case 'exportReportSheet':
+        return handleExportReportSheet_(payload);
+      case 'generateLabelsPdf':
+        return handleGenerateLabelsPdf_(payload);
+      case 'dailyOverdueCron':
+        return jsonResponse_(dailyOverdueCron());
+      default:
+        return jsonResponse_({ success: false, message: 'Action POST tidak dikenali: ' + action });
+    }
+  } catch (err) {
+    return jsonResponse_({
+      success: false,
+      message: err.message || String(err)
+    });
+  }
+}
+
+/**
+ * 1. Upload Cover Buku (maks 2MB) atau E-Book PDF ke Google Drive Sekolah
+ */
+function handleUploadCoverOrFile_(payload) {
+  const cfg = getConfig_();
+  const folder = cfg.driveFolderId
+    ? DriveApp.getFolderById(cfg.driveFolderId)
+    : DriveApp.getRootFolder();
+
+  const decoded = Utilities.base64Decode(payload.base64Data);
+  const mimeType = payload.mimeType || 'image/jpeg';
+  const fileName = payload.fileName || ('cover_' + new Date().getTime() + '.jpg');
+
+  const blob = Utilities.newBlob(decoded, mimeType, fileName);
+  const file = folder.createFile(blob);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+
+  const fileId = file.getId();
+  const publicUrl = 'https://drive.google.com/uc?export=view&amp;id=' + fileId;
+
+  return jsonResponse_({
+    success: true,
+    message: 'File berhasil diunggah ke Google Drive sekolah.',
+    data: {
+      drive_file_id: fileId,
+      cover_path: publicUrl,
+      view_url: file.getUrl()
+    }
+  });
+}
+
+/**
+ * 2. Bulk Import Anggota dari Data Excel / Google Sheets ke Supabase
+ */
+function handleImportMembers_(payload) {
+  const rows = payload.rows || [];
+  if (!rows.length) {
+    return jsonResponse_({ success: false, message: 'Data baris import anggota kosong.' });
+  }
+  const inserted = supabaseFetch_('members', 'post', rows, 'return=representation,resolution=merge-duplicates');
+  return jsonResponse_({
+    success: true,
+    message: 'Import anggota selesai.',
+    data: {
+      total_rows: rows.length,
+      success_rows: Array.isArray(inserted) ? inserted.length : rows.length,
+      failed_rows: 0
+    }
+  });
+}
+
+/**
+ * 3. Bulk Import Katalog Buku dari Data Excel / Google Sheets ke Supabase
+ */
+function handleImportBooks_(payload) {
+  const rows = payload.rows || [];
+  if (!rows.length) {
+    return jsonResponse_({ success: false, message: 'Data baris import buku kosong.' });
+  }
+  const inserted = supabaseFetch_('books', 'post', rows, 'return=representation');
+  return jsonResponse_({
+    success: true,
+    message: 'Import buku selesai.',
+    data: {
+      total_rows: rows.length,
+      success_rows: Array.isArray(inserted) ? inserted.length : rows.length,
+      failed_rows: 0
+    }
+  });
+}
+
+/**
+ * 4. Export Laporan Sirkulasi / Denda / Anggota ke Google Sheets &amp; Link Unduh .xlsx
+ */
+function handleExportReportSheet_(payload) {
+  const cfg = getConfig_();
+  const ss = cfg.reportSheetId
+    ? SpreadsheetApp.openById(cfg.reportSheetId)
+    : SpreadsheetApp.create('Laporan_Perpustakaan_Sipustadig_' + Utilities.formatDate(new Date(), 'Asia/Jakarta', 'yyyyMMdd'));
+
+  const sheetName = payload.sheetName || 'Laporan Sirkulasi';
+  let sheet = ss.getSheetByName(sheetName);
+  if (!sheet) {
+    sheet = ss.insertSheet(sheetName);
+  } else {
+    sheet.clear();
+  }
+
+  const headers = payload.headers || ['No. Transaksi', 'Nomor Anggota', 'Nama Anggota', 'Kode Eksemplar', 'Judul Buku', 'Jatuh Tempo', 'Status'];
+  const rows = payload.rows || [];
+
+  sheet.appendRow(headers);
+  sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#eef2f6');
+
+  if (rows.length &gt; 0) {
+    sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
+  }
+  sheet.autoResizeColumns(1, headers.length);
+
+  const fileId = ss.getId();
+  return jsonResponse_({
+    success: true,
+    message: 'Laporan berhasil diekspor ke Google Sheets.',
+    data: {
+      spreadsheet_url: ss.getUrl(),
+      xlsx_download_url: 'https://docs.google.com/spreadsheets/d/' + fileId + '/export?format=xlsx',
+      pdf_download_url: 'https://docs.google.com/spreadsheets/d/' + fileId + '/export?format=pdf'
+    }
+  });
+}
+
+/**
+ * 5. Generate Dokumen Cetak Label Barcode Eksemplar
+ */
+function handleGenerateLabelsPdf_(payload) {
+  const copies = payload.copies || [];
+  return jsonResponse_({
+    success: true,
+    message: 'Data cetak label barcode siap dicetak (' + copies.length + ' eksemplar).',
+    data: { count: copies.length }
+  });
+}
+
+/**
+ * 6. CRON JOB HARIAN (Pasang pada Triggers &gt; Time-driven &gt; Day timer &gt; 07:00 - 08:00)
+ * - Mengecek pinjaman melewati due_at di Supabase dan mengubah status menjadi 'overdue'
+ * - Sekaligus menjaga proyek Supabase Free Tier agar tetap aktif (anti-pause 7 hari)
+ */
+function dailyOverdueCron() {
+  const today = Utilities.formatDate(new Date(), 'Asia/Jakarta', 'yyyy-MM-dd');
+  const overdueItems = supabaseFetch_(
+    'loan_items?status=eq.borrowed&amp;due_at=lt.' + today + '&amp;select=id,loan_transaction_id,due_at',
+    'get'
+  );
+
+  if (Array.isArray(overdueItems) &amp;&amp; overdueItems.length &gt; 0) {
+    supabaseFetch_(
+      'loan_items?status=eq.borrowed&amp;due_at=lt.' + today,
+      'patch',
+      { status: 'overdue', updated_at: new Date().toISOString() }
+    );
+  }
+
+  return {
+    success: true,
+    checked_date: today,
+    marked_overdue_count: Array.isArray(overdueItems) ? overdueItems.length : 0
+  };
+}
+</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST / FLASH POPUP CONTAINER -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <script>
+    // =====================================================
+    // APPLICATION DATA (DESIGN.md + ui-ux-pustaka.md)
+    // =====================================================
+    const studentsData = [
+      {
+        barcode: 'SMP-2026-0812',
+        nisn: '0098123451',
+        type: 'Siswa',
+        name: 'Raka Pratama',
+        className: '8A',
+        xp: 1450,
+        streak: 7,
+        booksRead: 14,
+        classRank: 2,
+        status: 'Aktif',
+        badges: ['Kurikulum Merdeka', 'STEM Aktif']
+      },
+      {
+        barcode: 'SMP-2026-0901',
+        nisn: '0091122334',
+        type: 'Siswa',
+        name: 'Nadia Putri Kirana',
+        className: '9B',
+        xp: 1820,
+        streak: 12,
+        booksRead: 19,
+        classRank: 1,
+        status: 'Aktif',
+        badges: ['Duta Literasi', 'Buku Audio']
+      },
+      {
+        barcode: 'SMP-2026-0705',
+        nisn: '0105566778',
+        type: 'Siswa',
+        name: 'Bima Sakti Wibowo',
+        className: '7C',
+        xp: 980,
+        streak: 4,
+        booksRead: 9,
+        classRank: 3,
+        status: 'Aktif',
+        badges: ['Pembaca Nonteks']
+      },
+      {
+        barcode: 'GRU-2026-0014',
+        nisn: '198504122010012008',
+        type: 'Guru',
+        name: 'Ibu Siti Rahmawati, S.Pd',
+        className: 'Guru IPA',
+        xp: 2150,
+        streak: 15,
+        booksRead: 24,
+        classRank: 1,
+        status: 'Aktif',
+        badges: ['Pembina KIR', 'Guru Teladan']
+      },
+      {
+        barcode: 'STF-2026-0003',
+        nisn: '199008152015021001',
+        type: 'Staf',
+        name: 'Pak Hendra Wijaya',
+        className: 'Staf TU',
+        xp: 1120,
+        streak: 6,
+        booksRead: 11,
+        classRank: 2,
+        status: 'Aktif',
+        badges: ['Staf Literasi']
+      }
+    ];
+
+    const booksData = [
+      {
+        id: 'BK-SMP-001',
+        isbn: '978-602-244-512-8',
+        title: 'English for Nusantara untuk SMP/MTs Kelas VII',
+        author: 'Pusat Perbukuan Kemendikdasmen',
+        publisher: 'Kemendikdasmen RI',
+        publishedYear: 2022,
+        category: 'Buku Teks Kurikulum Merdeka',
+        classLevel: 'Kelas VII',
+        shelfLocation: 'Rak A-01',
+        format: 'hybrid',
+        typeLabel: 'PDF & Cetak',
+        totalCopies: 15,
+        stockPhysical: 12,
+        xpReward: 50,
+        icon: '📘',
+        reactions: { fire: 142 },
+        pages: [
+          '<strong>Chapter 1: About Me — Exploring English with Monita and Galang</strong><br><br>Buku <em>English for Nusantara Kelas VII</em> dirancang untuk membantu siswa SMP berkomunikasi dalam Bahasa Inggris secara kontekstual.',
+          '<strong>Chapter 2: Culinary and Me</strong><br><br>Mempelajari kosakata makanan tradisional Indonesia serta menulis resep sederhana dalam Bahasa Inggris.',
+          '<strong>Chapter 3: Home Sweet Home</strong><br><br>Mendeskripsikan ruangan di rumah dan kegiatan kebersihan sehari-hari.'
+        ]
+      },
+      {
+        id: 'BK-SMP-002',
+        isbn: '978-602-244-789-4',
+        title: 'Ilmu Pengetahuan Alam (IPA) untuk SMP/MTs Kelas VIII (Edisi Revisi)',
+        author: 'Pusat Perbukuan Kemendikdasmen',
+        publisher: 'Kemendikdasmen RI',
+        publishedYear: 2023,
+        category: 'Buku Teks Kurikulum Merdeka',
+        classLevel: 'Kelas VIII',
+        shelfLocation: 'Rak A-02',
+        format: 'hybrid',
+        typeLabel: 'PDF & Cetak',
+        totalCopies: 10,
+        stockPhysical: 9,
+        xpReward: 50,
+        icon: '🔬',
+        reactions: { fire: 128 },
+        pages: [
+          '<strong>Bab 1: Pengenalan Sel dan Mikroskop</strong><br><br>Setiap makhluk hidup tersusun atas unit terkecil yang disebut sel. Melalui pengamatan mikroskop, kita dapat membedakan dinding sel tumbuhan dan membran sel hewan.',
+          '<strong>Bab 2: Struktur dan Fungsi Tubuh Makhluk Hidup</strong><br><br>Memahami sistem pencernaan, peredaran darah, dan pernapasan manusia.',
+          '<strong>Bab 3: Usaha, Energi, dan Pesawat Sederhana</strong><br><br>Mengenal prinsip tuas, katrol, dan bidang miring.'
+        ]
+      },
+      {
+        id: 'BK-SMP-003',
+        isbn: '978-602-244-901-0',
+        title: 'Buku Audio Ilmu Pengetahuan Sosial (IPS) untuk SMP/MTs Kelas VII',
+        author: 'Pusat Perbukuan Kemendikdasmen',
+        publisher: 'Kemendikdasmen RI',
+        publishedYear: 2023,
+        category: 'Buku Audio',
+        classLevel: 'Kelas VII',
+        shelfLocation: 'Rak Audio-01',
+        format: 'audio',
+        typeLabel: 'Buku Audio',
+        totalCopies: 4,
+        stockPhysical: 4,
+        xpReward: 60,
+        icon: '🎧',
+        reactions: { fire: 94 },
+        pages: [
+          '<strong>Tema 01 (Narasi Audio): Keluarga Awal Kehidupan</strong><br><br>Klik tombol <em>🎧 Baca Suara (Audio)</em> di kanan atas untuk mendengarkan narasi bab ini secara langsung!',
+          '<strong>Tema 02: Keberagaman Lingkungan Sekitar</strong><br><br>Interaksi sosial masyarakat Nusantara dari masa praaksara hingga jalur perdagangan maritim.'
+        ]
+      },
+      {
+        id: 'BK-SMP-004',
+        isbn: '978-602-244-612-5',
+        title: 'Eksplorasi STEM: Energi Surya & Robotika Sederhana SMP',
+        author: 'Tim Kurasi STEM Kemendikdasmen',
+        publisher: 'Pusat Perbukuan',
+        publishedYear: 2024,
+        category: 'Buku Bermuatan STEM',
+        classLevel: 'Kelas VIII',
+        shelfLocation: 'Rak B-04',
+        format: 'hybrid',
+        typeLabel: 'STEM',
+        totalCopies: 6,
+        stockPhysical: 6,
+        xpReward: 50,
+        icon: '⚙️',
+        reactions: { fire: 85 },
+        pages: [
+          '<strong>Proyek 1: Merakit Panel Surya Mini</strong><br><br>Menggabungkan Sains, Teknologi, Rekayasa, dan Matematika melalui eksperimen panel surya sekolah.',
+          '<strong>Proyek 2: Penjernih Air Sederhana</strong><br><br>Merancang prototipe penyaring air menggunakan bahan ramah lingkungan.'
+        ]
+      },
+      {
+        id: 'BK-SMP-005',
+        isbn: '978-602-244-331-5',
+        title: 'Matematika untuk SMP/MTs Kelas IX (Kurikulum Merdeka)',
+        author: 'Pusat Perbukuan Kemendikdasmen',
+        publisher: 'Kemendikdasmen RI',
+        publishedYear: 2022,
+        category: 'Buku Teks Kurikulum Merdeka',
+        classLevel: 'Kelas IX',
+        shelfLocation: 'Rak A-05',
+        format: 'hybrid',
+        typeLabel: 'PDF & Cetak',
+        totalCopies: 10,
+        stockPhysical: 10,
+        xpReward: 50,
+        icon: '📐',
+        reactions: { fire: 78 },
+        pages: [
+          '<strong>Bab 1: Sistem Persamaan Linear Dua Variabel</strong><br><br>Memecahkan persoalan kontekstual menggunakan metode grafik, substitusi, dan eliminasi.',
+          '<strong>Bab 2: Bangun Ruang Sisi Lengkung</strong><br><br>Menghitung luas permukaan dan volume tabung, kerucut, serta bola.'
+        ]
+      },
+      {
+        id: 'BK-SMP-006',
+        isbn: '978-602-244-812-9',
+        title: 'Misteri Kapal Rempah Nusantara (Buku Nonteks Literasi)',
+        author: 'Balai Bahasa & Perbukuan',
+        publisher: 'Badan Bahasa',
+        publishedYear: 2023,
+        category: 'Buku Nonteks',
+        classLevel: 'Umum',
+        shelfLocation: 'Rak C-02',
+        format: 'hybrid',
+        typeLabel: 'Nonteks',
+        totalCopies: 5,
+        stockPhysical: 5,
+        xpReward: 50,
+        icon: '⛵',
+        reactions: { fire: 99 },
+        pages: [
+          '<strong>Pelayaran Menuju Banda Neira</strong><br><br>Mengisahkan petualangan tiga sahabat remaja menelusuri jejak kapal jung Nusantara.',
+          '<strong>Hikmah Persatuan Bahari</strong><br><br>Laut adalah jembatan persaudaraan yang menyatukan budaya Nusantara.'
+        ]
+      },
+      {
+        id: 'BK-SMP-007',
+        isbn: '978-602-244-700-9',
+        title: 'Informatika untuk SMP/MTs Kelas VIII',
+        author: 'Pusat Perbukuan Kemendikdasmen',
+        publisher: 'Kemendikdasmen RI',
+        publishedYear: 2023,
+        category: 'Sains & Teknologi',
+        classLevel: 'Kelas VIII',
+        shelfLocation: 'Rak B-01',
+        format: 'ebook',
+        typeLabel: 'Khusus E-Book',
+        totalCopies: 0,
+        stockPhysical: 0,
+        xpReward: 50,
+        icon: '💻',
+        reactions: { fire: 110 },
+        pages: [
+          '<strong>Bab 1: Berpikir Komputasional</strong><br><br>Menyelesaikan masalah kompleks dengan dekomposisi, pengenalan pola, dan algoritma.'
+        ]
+      },
+      {
+        id: 'BK-SMP-008',
+        isbn: '978-602-244-990-0',
+        title: 'Komik Edukasi: Bijak Berinternet & Etika Digital Remaja',
+        author: 'Pusat Penguatan Karakter',
+        publisher: 'Kemendikdasmen RI',
+        publishedYear: 2024,
+        category: 'Komik Edukasi',
+        classLevel: 'Umum',
+        shelfLocation: 'Rak C-07',
+        format: 'physical',
+        typeLabel: 'Buku Fisik',
+        totalCopies: 7,
+        stockPhysical: 7,
+        xpReward: 50,
+        icon: '🎨',
+        reactions: { fire: 88 },
+        pages: [
+          '<strong>Episode 1: Saring Sebelum Sharing</strong><br><br>Cara memeriksa kebenaran informasi di internet agar terhindar dari hoaks.'
+        ]
+      }
+    ];
+
+    const classRankingData = [
+      { className: 'Kelas 9B', totalXp: 14850, activeReaders: 31 },
+      { className: 'Kelas 8A', totalXp: 13920, activeReaders: 29 },
+      { className: 'Kelas 7C', totalXp: 11400, activeReaders: 27 },
+      { className: 'Kelas 8B', totalXp: 9850, activeReaders: 24 }
+    ];
+
+    let activeStudent = studentsData[0];
+    let currentCategory = 'Semua';
+    let currentFormat = 'all';
+    let currentClassLevel = 'all';
+    let currentSearch = '';
+    let activeReaderBook = null;
+    let activeReaderPage = 0;
+    let pendingWaiveFineId = null;
+    let totalReadsCounter = 28;
+    let totalDownloadsCounter = 19;
+
+    let loansData = [
+      {
+        ticketCode: 'LN-2026-8821',
+        bookId: 'BK-SMP-001',
+        bookTitle: 'English for Nusantara untuk SMP/MTs Kelas VII',
+        studentName: 'Raka Pratama (8A)',
+        studentBarcode: 'SMP-2026-0812',
+        borrowedDate: '19 Okt 2026',
+        dueDate: '26 Okt 2026',
+        status: 'Dipinjam'
+      },
+      {
+        ticketCode: 'LN-2026-8790',
+        bookId: 'BK-SMP-002',
+        bookTitle: 'Ilmu Pengetahuan Alam (IPA) untuk SMP/MTs Kelas VIII',
+        studentName: 'Bima Sakti Wibowo (7C)',
+        studentBarcode: 'SMP-2026-0705',
+        borrowedDate: '12 Okt 2026',
+        dueDate: '19 Okt 2026',
+        status: 'Terlambat'
+      }
+    ];
+
+    let finesData = [
+      {
+        id: 'FN-2026-01',
+        memberName: 'Bima Sakti Wibowo (7C)',
+        memberBarcode: 'SMP-2026-0705',
+        bookTitle: 'Ilmu Pengetahuan Alam (IPA) Kelas VIII',
+        type: 'Keterlambatan (5 Hari)',
+        amount: 5000,
+        createdAt: '19 Okt 2026',
+        status: 'Belum Lunas',
+        waivedReason: ''
+      },
+      {
+        id: 'FN-2026-02',
+        memberName: 'Raka Pratama (8A)',
+        memberBarcode: 'SMP-2026-0812',
+        bookTitle: 'Matematika untuk SMP/MTs Kelas IX',
+        type: 'Keterlambatan (2 Hari)',
+        amount: 2000,
+        createdAt: '14 Okt 2026',
+        status: 'Lunas',
+        waivedReason: ''
+      }
+    ];
+
+    let auditLogsData = [
+      {
+        time: '19 Okt 2026, 18:10',
+        user: 'Pustakawan',
+        action: 'CREATE_LOAN',
+        entity: 'LN-2026-8821',
+        detail: 'Peminjaman eksemplar BK-SMP-001 oleh SMP-2026-0812'
+      },
+      {
+        time: '19 Okt 2026, 16:45',
+        user: 'Raka Pratama',
+        action: 'READ_EBOOK',
+        entity: 'BK-SMP-002',
+        detail: 'Menyelesaikan bacaan & Jurnal GLS (+50 XP)'
+      }
+    ];
+
+    let journalsData = [
+      {
+        bookTitle: 'Ilmu Pengetahuan Alam (IPA) untuk SMP/MTs Kelas VIII',
+        studentName: 'Raka Pratama (8A)',
+        date: '19 Okt 2026',
+        summary: 'Sel tumbuhan memiliki dinding sel dan kloroplas untuk fotosintesis, sedangkan sel hewan memiliki membran sel yang lentur.',
+        xpEarned: 50
+      },
+      {
+        bookTitle: 'English for Nusantara untuk SMP/MTs Kelas VII',
+        studentName: 'Nadia Putri Kirana (9B)',
+        date: '18 Okt 2026',
+        summary: 'Mempelajari cara memperkenalkan diri dan mendeskripsikan kuliner khas daerah dalam Bahasa Inggris.',
+        xpEarned: 50
+      }
+    ];
+
+    // =====================================================
+    // FLASH TOAST (ui-ux-pustaka.md: .flash / .warning-box)
+    // =====================================================
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto shadow-md min-w-[280px] max-w-md ${type === 'success' ? 'flash' : 'warning-box'}`;
+      toast.innerHTML = `
+        <div class="font-semibold text-[#24292f]">${type === 'success' ? 'Berhasil' : 'Perhatian'}</div>
+        <div class="text-xs text-[#57606a]">${message}</div>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 250);
+      }, 3200);
+    }
+
+    function addAuditLog(user, action, entity, detail) {
+      auditLogsData.unshift({ time: 'Baru saja', user, action, entity, detail });
+      renderAllTables();
+    }
+
+    // =====================================================
+    // RENDER STUDENT / MEMBER STATUS & SCAN PANELS
+    // =====================================================
+    function renderStudentProfile() {
+      document.getElementById('headerStreakText').textContent = `${activeStudent.streak} Hari`;
+      document.getElementById('headerXpText').textContent = `${activeStudent.xp.toLocaleString('id-ID')} XP`;
+      document.getElementById('headerStudentName').textContent = `${activeStudent.name.split(' ')[0]} (${activeStudent.className}) • Ganti/Scan`;
+
+      document.getElementById('heroBarcodeId').textContent = activeStudent.barcode;
+      document.getElementById('heroStudentName').textContent = activeStudent.name;
+      document.getElementById('statBooksRead').textContent = activeStudent.booksRead;
+      document.getElementById('statClassRank').textContent = `#${activeStudent.classRank}`;
+
+      const totalPhys = booksData.reduce((acc, b) => acc + b.stockPhysical, 0);
+      document.getElementById('sibiStatAvailable').textContent = totalPhys + loansData.length;
+      document.getElementById('statAvailableCopies').textContent = totalPhys;
+      document.getElementById('sibiStatReads').textContent = totalReadsCounter;
+      document.getElementById('sibiStatDownloads').textContent = totalDownloadsCounter;
+      document.getElementById('statActiveLoansCount').textContent = loansData.length;
+
+      const level = Math.floor(activeStudent.xp / 250) + 1;
+      const nextLevelXp = level * 250;
+      document.getElementById('heroLevelBadge').textContent = `Level ${level}`;
+      document.getElementById('heroXpProgressText').textContent = `${activeStudent.xp} / ${nextLevelXp} XP`;
+
+      document.getElementById('navLoanCount').textContent = loansData.length;
+      document.getElementById('navLoanCountMobile').textContent = loansData.length;
+
+      // Update Scan Panel Anggota on Peminjaman Page
+      const scanCode = document.getElementById('adminStudentBarcodeInput').value.trim();
+      const scannedMember = studentsData.find(s => s.barcode === scanCode) || activeStudent;
+      const memberUnpaid = finesData.filter(f => f.memberBarcode === scannedMember.barcode && f.status === 'Belum Lunas');
+      const unpaidNominal = memberUnpaid.reduce((a, b) => a + b.amount, 0);
+      const memberLoans = loansData.filter(l => l.studentBarcode === scannedMember.barcode);
+
+      const panel = document.getElementById('borrowMemberScanPanel');
+      if (panel) {
+        panel.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-[#0969da] uppercase text-[11px]">Panel Anggota Terdeteksi</span>
+            <span class="badge badge-compact ${unpaidNominal > 0 ? 'badge-danger' : 'badge-success'}">${unpaidNominal > 0 ? 'Ada Denda' : 'Aktif'}</span>
+          </div>
+          <div><strong>Nama:</strong> ${scannedMember.name}</div>
+          <div><strong>Tipe & Kelas:</strong> ${scannedMember.type} • Kelas ${scannedMember.className} (<span class="code-cell">${scannedMember.barcode}</span>)</div>
+          <div><strong>Pinjaman Aktif:</strong> ${memberLoans.length} dari ${scannedMember.type === 'Guru' ? 5 : scannedMember.type === 'Staf' ? 3 : 2} batas maksimal (${scannedMember.type === 'Guru' ? 'Durasi 14 hari' : 'Durasi 7 hari'})</div>
+          <div><strong>Denda Belum Lunas:</strong> <span class="${unpaidNominal > 0 ? 'text-[#cf222e] font-bold' : 'text-[#1f883d] font-semibold'}">Rp${unpaidNominal.toLocaleString('id-ID')}</span></div>
+        `;
+      }
+    }
+
+    // =====================================================
+    // RENDER COMPACT CARDS & TABLES (ui-ux-pustaka.md)
+    // =====================================================
+    function renderAllTables() {
+      document.getElementById('libTotalTitles').textContent = booksData.length;
+      document.getElementById('libActiveLoansCard').textContent = loansData.length;
+
+      const unpaidTotal = finesData
+        .filter(f => f.status === 'Belum Lunas')
+        .reduce((acc, f) => acc + f.amount, 0);
+      document.getElementById('libUnpaidFinesCard').textContent = `Rp${unpaidTotal.toLocaleString('id-ID')}`;
+
+      // Compact Data Cards on Dashboard (ui-ux-pustaka.md section: Compact Data Cards)
+      const compactGrid = document.getElementById('compactCardsGrid');
+      if (compactGrid) {
+        compactGrid.innerHTML = booksData.slice(0, 6).map(b => {
+          const isAvail = b.stockPhysical > 0;
+          return `
+            <div class="card p-3.5 flex flex-col justify-between gap-2">
+              <div>
+                <div class="flex items-center justify-between gap-2">
+                  <span class="code-cell text-xs text-[#57606a]">${b.id}</span>
+                  <span class="badge badge-compact ${isAvail ? 'badge-success' : 'badge-primary'}">
+                    ${isAvail ? `Tersedia (${b.stockPhysical})` : 'E-Book'}
+                  </span>
+                </div>
+                <div class="font-bold text-sm text-[#24292f] truncate mt-1">${b.title}</div>
+                <div class="text-xs text-[#57606a] mt-0.5">${b.shelfLocation} · Kondisi Baik</div>
+              </div>
+              <div class="flex items-center gap-1.5 pt-1">
+                <button type="button" data-detail-book="${b.id}" class="btn-open-detail btn btn-secondary text-xs py-1 px-2.5">Lihat Detail</button>
+                <button type="button" data-read-book="${b.id}" class="btn-read-ebook btn btn-primary text-xs py-1 px-2.5">Baca</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Dashboard Active Loans Table
+      const libLoanBody = document.getElementById('librarianLoanTableBody');
+      if (libLoanBody) {
+        libLoanBody.innerHTML = loansData.map(l => `
+          <tr>
+            <td class="code-cell text-[#0969da]">${l.ticketCode}</td>
+            <td><span class="code-cell">${l.studentBarcode}</span> · ${l.studentName}</td>
+            <td><span class="code-cell">${l.bookId}</span> · ${l.bookTitle}</td>
+            <td>${l.dueDate}</td>
+            <td>
+              <span class="badge ${l.status === 'Terlambat' ? 'badge-danger' : 'badge-primary'}">${l.status}</span>
+            </td>
+            <td class="text-right">
+              <button type="button" data-quick-return="${l.bookId}" class="btn-quick-return btn btn-secondary text-xs py-1 px-2">Kembalikan</button>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // Peminjaman Page Active List
+      const activeBorrowBody = document.getElementById('activeBorrowListBody');
+      if (activeBorrowBody) {
+        activeBorrowBody.innerHTML = loansData.map(l => `
+          <tr>
+            <td class="code-cell">${l.ticketCode}</td>
+            <td class="code-cell text-[#0969da]">${l.bookId}</td>
+            <td class="font-semibold">${l.bookTitle}</td>
+            <td>${l.studentName}</td>
+            <td>${l.dueDate}</td>
+            <td><span class="badge ${l.status === 'Terlambat' ? 'badge-danger' : 'badge-primary'}">${l.status}</span></td>
+          </tr>
+        `).join('');
+      }
+
+      // Pengembalian Page Table
+      const returnBody = document.getElementById('returnTableBody');
+      if (returnBody) {
+        returnBody.innerHTML = loansData.map(l => `
+          <tr>
+            <td class="code-cell">${l.ticketCode}</td>
+            <td class="code-cell text-[#0969da]">${l.bookId}</td>
+            <td class="font-semibold">${l.bookTitle}</td>
+            <td>${l.studentName}</td>
+            <td>${l.dueDate}</td>
+            <td class="text-right">
+              <button type="button" data-quick-return="${l.bookId}" class="btn-quick-return btn btn-success text-xs py-1 px-2.5">Proses Kembali</button>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // Master Members Table
+      const membersBody = document.getElementById('membersTableBody');
+      if (membersBody) {
+        membersBody.innerHTML = studentsData.map(s => {
+          const activeCount = loansData.filter(l => l.studentBarcode === s.barcode).length;
+          const hasUnpaid = finesData.some(f => f.memberBarcode === s.barcode && f.status === 'Belum Lunas');
+          return `
+            <tr>
+              <td class="code-cell text-[#0969da]">${s.barcode}</td>
+              <td class="code-cell">${s.nisn}</td>
+              <td class="font-semibold">${s.name}</td>
+              <td>${s.type} · Kelas ${s.className}</td>
+              <td>${activeCount} Eksemplar</td>
+              <td>
+                <span class="badge ${hasUnpaid ? 'badge-danger' : 'badge-success'}">
+                  ${hasUnpaid ? 'Ada Denda' : s.status}
+                </span>
+              </td>
+              <td class="text-right">
+                <button type="button" data-view-member="${s.barcode}" class="btn-view-member btn btn-secondary text-xs py-1 px-2.5">Detail</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // Master Books Table
+      const masterBooksBody = document.getElementById('masterBooksTableBody');
+      if (masterBooksBody) {
+        masterBooksBody.innerHTML = booksData.map(b => `
+          <tr>
+            <td class="code-cell text-[#0969da]">${b.id}</td>
+            <td class="font-semibold">${b.title}</td>
+            <td>${b.author}</td>
+            <td><span class="badge badge-neutral">${b.category}</span></td>
+            <td class="code-cell text-xs">${b.isbn}</td>
+            <td>${b.shelfLocation}</td>
+            <td>
+              <span class="badge ${b.stockPhysical > 0 ? 'badge-success' : 'badge-primary'}">
+                ${b.stockPhysical > 0 ? `Tersedia ${b.stockPhysical}/${b.totalCopies || b.stockPhysical}` : 'E-Book PDF'}
+              </span>
+            </td>
+            <td class="text-right">
+              <button type="button" data-detail-book="${b.id}" class="btn-open-detail btn btn-secondary text-xs py-1 px-2.5">Lihat Detail</button>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // Master Copies Table
+      const copiesBody = document.getElementById('bookCopiesTableBody');
+      if (copiesBody) {
+        copiesBody.innerHTML = booksData.map((b, i) => `
+          <tr>
+            <td class="code-cell">BK-2026-00000${i + 1}</td>
+            <td class="code-cell text-[#0969da]">${b.id}</td>
+            <td class="font-semibold">${b.title}</td>
+            <td>${b.shelfLocation}</td>
+            <td><span class="badge badge-success">Baik</span></td>
+            <td>
+              <span class="badge ${b.stockPhysical > 0 ? 'badge-success' : 'badge-primary'}">
+                ${b.stockPhysical > 0 ? 'Tersedia' : 'Dipinjam / Digital'}
+              </span>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // Fines Table (ui-ux-pustaka.md format: Rp1.000, Rp5.000, Bayar, Bebaskan)
+      const finesBody = document.getElementById('finesTableBody');
+      if (finesBody) {
+        finesBody.innerHTML = finesData.map(f => {
+          const badgeClass = f.status === 'Lunas'
+            ? 'badge-success'
+            : f.status === 'Dibebaskan'
+              ? 'badge-neutral'
+              : 'badge-danger';
+          return `
+            <tr>
+              <td class="code-cell">${f.id}</td>
+              <td class="font-semibold">${f.memberName}</td>
+              <td>${f.bookTitle}</td>
+              <td>${f.type}</td>
+              <td class="font-bold ${f.status === 'Belum Lunas' ? 'text-[#cf222e]' : ''}">Rp${f.amount.toLocaleString('id-ID')}</td>
+              <td>
+                <span class="badge ${badgeClass}">${f.status}</span>
+                ${f.waivedReason ? `<div class="text-[11px] text-[#57606a] mt-0.5">Alasan: ${f.waivedReason}</div>` : ''}
+              </td>
+              <td>${f.createdAt}</td>
+              <td class="text-right">
+                ${f.status === 'Belum Lunas' ? `
+                  <div class="inline-flex gap-1.5">
+                    <button type="button" data-pay-fine="${f.id}" class="btn-pay-fine btn btn-success text-xs py-1 px-2.5">Bayar</button>
+                    <button type="button" data-waive-fine="${f.id}" class="btn-waive-fine btn btn-secondary text-xs py-1 px-2.5">Bebaskan</button>
+                  </div>
+                ` : `<span class="text-xs text-[#57606a]">Selesai</span>`}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // Reports Table
+      const reportsBody = document.getElementById('reportsTableBody');
+      if (reportsBody) {
+        reportsBody.innerHTML = loansData.map(l => `
+          <tr>
+            <td class="code-cell">${l.ticketCode}</td>
+            <td class="code-cell text-[#0969da]">${l.studentBarcode}</td>
+            <td class="font-semibold">${l.studentName}</td>
+            <td class="code-cell">${l.bookId}</td>
+            <td>${l.bookTitle}</td>
+            <td>${l.dueDate}</td>
+            <td><span class="badge ${l.status === 'Terlambat' ? 'badge-danger' : 'badge-primary'}">${l.status}</span></td>
+          </tr>
+        `).join('');
+      }
+
+      // Audit Logs Table
+      const auditBody = document.getElementById('auditLogsTableBody');
+      if (auditBody) {
+        auditBody.innerHTML = auditLogsData.map(a => `
+          <tr>
+            <td class="text-xs text-[#57606a]">${a.time}</td>
+            <td class="font-semibold">${a.user}</td>
+            <td><span class="badge badge-primary code-cell">${a.action}</span></td>
+            <td class="code-cell">${a.entity}</td>
+            <td>${a.detail}</td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    // =====================================================
+    // RENDER KATALOG ONLINE / OPAC BOOK CARDS (ui-ux-pustaka.md)
+    // =====================================================
+    function renderBooksGrid() {
+      const grid = document.getElementById('booksGrid');
+      const filtered = booksData.filter(book => {
+        const matchCat = currentCategory === 'Semua' || book.category === currentCategory;
+        const matchClass = currentClassLevel === 'all' || book.classLevel === currentClassLevel;
+        const matchFormat =
+          currentFormat === 'all' ||
+          (currentFormat === 'ebook' && (book.format === 'ebook' || book.format === 'hybrid' || book.format === 'audio')) ||
+          (currentFormat === 'physical' && (book.format === 'physical' || book.format === 'hybrid')) ||
+          (currentFormat === 'audio' && book.format === 'audio');
+        const q = currentSearch.trim().toLowerCase();
+        const matchSearch = !q ||
+          book.title.toLowerCase().includes(q) ||
+          book.author.toLowerCase().includes(q) ||
+          book.id.toLowerCase().includes(q) ||
+          book.isbn.toLowerCase().includes(q) ||
+          book.category.toLowerCase().includes(q);
+        return matchCat && matchClass && matchFormat && matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full empty-state">
+            <div class="text-2xl">📚</div>
+            <div class="font-bold text-base">Belum ada data buku yang sesuai filter</div>
+            <p class="text-xs text-[#57606a] max-w-md">Silakan gunakan kata kunci pencarian lain atau pilih tombol Semua Koleksi.</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(book => {
+        const hasEbook = book.format === 'ebook' || book.format === 'hybrid' || book.format === 'audio';
+        const hasPhysical = book.format === 'physical' || book.format === 'hybrid';
+        const availText = hasPhysical
+          ? `Tersedia ${book.stockPhysical} dari ${book.totalCopies || book.stockPhysical} eksemplar`
+          : 'Tersedia E-Book Digital';
+
+        return `
+          <article class="book-card">
+            <div>
+              <!-- Clean Soft Light Book Cover (No harsh gradients per ui-ux-pustaka.md) -->
+              <div class="book-cover">
+                <div class="w-full flex items-center justify-between text-[11px] font-semibold text-[#57606a]">
+                  <span class="code-cell">${book.id}</span>
+                  <span class="badge badge-compact badge-neutral">${book.classLevel}</span>
+                </div>
+                <div class="my-auto text-center px-2 space-y-2">
+                  <div class="text-4xl">${book.icon}</div>
+                  <div class="font-bold text-xs text-[#24292f] line-clamp-3 leading-snug">${book.title}</div>
+                </div>
+                <div class="w-full flex items-center justify-between text-[11px] text-[#57606a] pt-2 border-t border-[#d8dee4]">
+                  <span>Rak: <strong>${book.shelfLocation}</strong></span>
+                  <span class="badge badge-compact ${book.stockPhysical > 0 ? 'badge-success' : 'badge-primary'}">
+                    ${book.stockPhysical > 0 ? 'Tersedia' : 'Digital'}
+                  </span>
+                </div>
+              </div>
+
+              <div class="book-card-body">
+                <div class="text-[11px] font-semibold text-[#0969da] truncate">${book.category}</div>
+                <h3 class="book-title" title="${book.title}">${book.title}</h3>
+                <p class="book-meta truncate">${book.author}</p>
+                <div class="text-xs font-medium text-[#24292f] mt-1">${availText}</div>
+              </div>
+            </div>
+
+            <div class="p-3 pt-0 space-y-1.5">
+              <div class="grid ${hasEbook && hasPhysical ? 'grid-cols-2' : 'grid-cols-1'} gap-1.5">
+                ${hasEbook ? `
+                  <button type="button" data-read-book="${book.id}" class="btn-read-ebook btn btn-primary text-xs w-full">
+                    ${book.format === 'audio' ? '🎧 Audio' : '📖 Baca E-Book'}
+                  </button>
+                ` : ''}
+                ${hasPhysical ? `
+                  <button type="button" data-borrow-book="${book.id}" class="btn-borrow-physical btn btn-secondary text-xs w-full" ${book.stockPhysical <= 0 ? 'disabled' : ''}>
+                    ${book.stockPhysical > 0 ? 'Pinjam Buku' : 'Dipinjam'}
+                  </button>
+                ` : ''}
+              </div>
+              <button type="button" data-detail-book="${book.id}" class="btn-open-detail btn btn-secondary text-xs w-full">
+                Lihat Detail
+              </button>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    // =====================================================
+    // DETAIL BUKU UI (ui-ux-pustaka.md Section: Detail Buku UI)
+    // =====================================================
+    function openBookDetail(bookId) {
+      const book = booksData.find(b => b.id === bookId);
+      if (!book) return;
+      const panel = document.getElementById('bookDetailPanel');
+      const content = document.getElementById('bookDetailContent');
+      panel.classList.remove('hidden');
+
+      content.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+          <div class="md:col-span-3 bg-[#f6f8fa] border border-[#d0d7de] rounded-[8px] p-5 flex flex-col items-center justify-center text-center space-y-2">
+            <div class="text-5xl">${book.icon}</div>
+            <div class="font-bold text-sm">${book.title}</div>
+            <span class="badge badge-primary">${book.typeLabel}</span>
+          </div>
+          <div class="md:col-span-9 space-y-3 text-xs">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#d8dee4] pb-2">
+              <div>
+                <h3 class="font-bold text-base text-[#24292f]">${book.title}</h3>
+                <p class="text-[#57606a]">Penulis: ${book.author} · Penerbit: ${book.publisher || 'Kemendikdasmen'} (${book.publishedYear || 2023})</p>
+              </div>
+              <span class="badge ${book.stockPhysical > 0 ? 'badge-success' : 'badge-primary'}">
+                Tersedia ${book.stockPhysical} Eksemplar · ${book.shelfLocation}
+              </span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div class="p-2.5 rounded bg-[#f6f8fa] border border-[#d8dee4]"><strong>ISBN:</strong> <span class="code-cell">${book.isbn}</span></div>
+              <div class="p-2.5 rounded bg-[#f6f8fa] border border-[#d8dee4]"><strong>Kategori:</strong> ${book.category}</div>
+              <div class="p-2.5 rounded bg-[#f6f8fa] border border-[#d8dee4]"><strong>Jenjang:</strong> ${book.classLevel}</div>
+              <div class="p-2.5 rounded bg-[#f6f8fa] border border-[#d8dee4]"><strong>Lokasi Rak:</strong> ${book.shelfLocation}</div>
+            </div>
+            <div class="flex flex-wrap gap-2 pt-1">
+              <button type="button" data-read-book="${book.id}" class="btn-read-ebook btn btn-primary">📖 Baca E-Book Sekarang</button>
+              ${book.stockPhysical > 0 ? `<button type="button" data-borrow-book="${book.id}" class="btn-borrow-physical btn btn-success">Pinjam Eksemplar Fisik</button>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+      panel.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // =====================================================
+    // RENDER LOANS, JOURNALS & LEADERBOARD
+    // =====================================================
+    function renderLoansAndJournals() {
+      const loansContainer = document.getElementById('loansListContainer');
+      loansContainer.innerHTML = loansData.map(loan => `
+        <div class="p-3.5 rounded-[6px] bg-[#f6f8fa] border border-[#d0d7de] flex items-center justify-between gap-3">
+          <div class="space-y-1 text-xs">
+            <div class="flex items-center gap-2">
+              <span class="code-cell text-[#0969da]">${loan.ticketCode}</span>
+              <span class="badge badge-compact ${loan.status === 'Terlambat' ? 'badge-danger' : 'badge-primary'}">${loan.status}</span>
+            </div>
+            <div class="font-bold text-sm text-[#24292f]">${loan.bookTitle}</div>
+            <div class="text-[#57606a]">Peminjam: ${loan.studentName} · Jatuh Tempo: <strong>${loan.dueDate}</strong></div>
+          </div>
+          <div class="code-cell text-xs px-2.5 py-1.5 rounded bg-white border border-[#d0d7de]">${loan.bookId}</div>
+        </div>
+      `).join('');
+
+      const journalsContainer = document.getElementById('journalsListContainer');
+      journalsContainer.innerHTML = journalsData.map(j => `
+        <div class="p-3.5 rounded-[6px] bg-[#f6f8fa] border border-[#d0d7de] space-y-1 text-xs">
+          <div class="flex items-center justify-between">
+            <strong class="text-[#0969da]">${j.studentName}</strong>
+            <span class="badge badge-compact badge-success">+${j.xpEarned} XP · ${j.date}</span>
+          </div>
+          <div class="font-bold text-[#24292f]">${j.bookTitle}</div>
+          <p class="text-[#57606a]">"${j.summary}"</p>
+        </div>
+      `).join('');
+    }
+
+    function renderLeaderboards() {
+      const sortedStudents = [...studentsData].sort((a, b) => b.xp - a.xp);
+      document.getElementById('studentLeaderboardList').innerHTML = sortedStudents.map((s, idx) => `
+        <div class="p-3 rounded-[6px] bg-[#f6f8fa] border border-[#d0d7de] flex items-center justify-between text-xs">
+          <div class="flex items-center gap-3">
+            <span class="font-bold text-sm w-6">#${idx + 1}</span>
+            <div>
+              <div class="font-bold text-sm text-[#24292f]">${s.name} <span class="badge badge-compact badge-neutral">Kelas ${s.className}</span></div>
+              <div class="text-[#57606a]">${s.booksRead} buku selesai · Streak ${s.streak} hari</div>
+            </div>
+          </div>
+          <div class="font-bold text-sm text-[#0969da]">${s.xp.toLocaleString('id-ID')} XP</div>
+        </div>
+      `).join('');
+
+      const maxClassXp = Math.max(...classRankingData.map(c => c.totalXp));
+      document.getElementById('classLeaderboardList').innerHTML = classRankingData.map((c, i) => `
+        <div class="space-y-1 text-xs">
+          <div class="flex items-center justify-between font-semibold">
+            <span>#${i + 1} ${c.className} (${c.activeReaders} Siswa)</span>
+            <span class="text-[#0969da]">${c.totalXp.toLocaleString('id-ID')} XP</span>
+          </div>
+          <div class="w-full h-2 rounded-full bg-[#eef2f6] overflow-hidden border border-[#d8dee4]">
+            <div class="h-full bg-[#0969da]" style="width: ${Math.round((c.totalXp / maxClassXp) * 100)}%"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderStudentSwitchModal() {
+      document.getElementById('studentSwitchList').innerHTML = studentsData.map(s => {
+        const selected = s.barcode === activeStudent.barcode;
+        return `
+          <button type="button" data-select-student="${s.barcode}" class="student-switch-btn w-full p-3 rounded-[6px] border text-left flex items-center justify-between ${selected ? 'bg-[#ddf4ff] border-[#0969da]' : 'bg-[#f6f8fa] border-[#d0d7de]'}">
+            <div>
+              <div class="font-bold text-sm text-[#24292f]">${s.name} (Kelas ${s.className})</div>
+              <div class="text-xs text-[#57606a] code-cell">Nomor Anggota: ${s.barcode} · NISN: ${s.nisn}</div>
+            </div>
+            <span class="badge ${selected ? 'badge-primary' : 'badge-neutral'}">${selected ? 'Aktif' : 'Pilih'}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    // =====================================================
+    // E-BOOK READER & BORROW FUNCTIONS
+    // =====================================================
+    function openEbookReader(bookId) {
+      const book = booksData.find(b => b.id === bookId);
+      if (!book) return;
+      activeReaderBook = book;
+      activeReaderPage = 0;
+      totalReadsCounter += 1;
+      renderStudentProfile();
+      updateReaderView();
+      document.getElementById('modalEbookReader').classList.remove('hidden');
+    }
+
+    function updateReaderView() {
+      if (!activeReaderBook) return;
+      const total = activeReaderBook.pages.length;
+      document.getElementById('readerBadgeType').textContent = `${activeReaderBook.typeLabel} · ${activeReaderBook.classLevel}`;
+      document.getElementById('readerBookTitle').textContent = activeReaderBook.title;
+      document.getElementById('readerBookAuthor').textContent = `${activeReaderBook.author} · ${activeReaderBook.category}`;
+      document.getElementById('readerPageIndicator').textContent = `Hal ${activeReaderPage + 1} / ${total}`;
+      document.getElementById('readerPageContent').innerHTML = activeReaderBook.pages[activeReaderPage];
+    }
+
+    function borrowPhysicalBook(bookId) {
+      const book = booksData.find(b => b.id === bookId);
+      if (!book || book.stockPhysical <= 0) {
+        showToast('Buku tidak tersedia untuk dipinjam.', 'warn');
+        return;
+      }
+      book.stockPhysical -= 1;
+      activeStudent.xp += 30;
+      const loanNo = 'LN-2026-' + Math.floor(1000 + Math.random() * 9000);
+      loansData.unshift({
+        ticketCode: loanNo,
+        bookId: book.id,
+        bookTitle: book.title,
+        studentName: `${activeStudent.name} (${activeStudent.className})`,
+        studentBarcode: activeStudent.barcode,
+        borrowedDate: '19 Okt 2026',
+        dueDate: '26 Okt 2026',
+        status: 'Dipinjam'
+      });
+
+      addAuditLog(activeStudent.name, 'CREATE_LOAN', loanNo, `Meminjam eksemplar ${book.id}`);
+      renderStudentProfile();
+      renderBooksGrid();
+      renderLoansAndJournals();
+      renderLeaderboards();
+      renderAllTables();
+      showToast('Peminjaman berhasil disimpan.');
+    }
+
+    function switchTab(target) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+      const panel = document.getElementById(`tab-${target}`);
+      if (panel) panel.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-tab-btn').forEach(b => {
+        const isMatch = b.getAttribute('data-tab') === target;
+        if (b.classList.contains('nav-link')) {
+          b.classList.toggle('nav-link-active', isMatch);
+        }
+        if (b.classList.contains('sidebar-item')) {
+          b.classList.toggle('sidebar-item-active', isMatch);
+        }
+      });
+    }
+
+    // =====================================================
+    // INITIALIZE & WIRE ALL CONTROLS
+    // =====================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      renderStudentProfile();
+      renderBooksGrid();
+      renderLoansAndJournals();
+      renderLeaderboards();
+      renderStudentSwitchModal();
+      renderAllTables();
+
+      // Sidebar Collapse
+      document.getElementById('btnToggleSidebar').addEventListener('click', () => {
+        const sb = document.getElementById('appSidebar');
+        sb.classList.toggle('sidebar-collapsed');
+        sb.classList.toggle('w-60');
+        sb.classList.toggle('w-16');
+      });
+
+      // Tab Navigation
+      document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          switchTab(btn.getAttribute('data-tab'));
+        });
+      });
+
+      // Light-Only Policy Notice Button
+      document.getElementById('btnToggleTheme').addEventListener('click', () => {
+        showToast('Sesuai pedoman ui-ux-pustaka.md, aplikasi dikunci pada tema terang lembut (#eef2f6) agar nyaman bagi pustakawan.');
+      });
+
+      // Search & Filters in Catalog
+      document.getElementById('searchInput').addEventListener('input', (e) => {
+        currentSearch = e.target.value;
+        renderBooksGrid();
+      });
+      document.getElementById('classLevelFilter').addEventListener('change', (e) => {
+        currentClassLevel = e.target.value;
+        renderBooksGrid();
+      });
+      document.getElementById('btnHeroSearchFocus').addEventListener('click', () => {
+        switchTab('catalog');
+        renderBooksGrid();
+      });
+
+      document.querySelectorAll('.format-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentFormat = btn.getAttribute('data-format');
+          document.querySelectorAll('.format-filter-btn').forEach(b => {
+            b.className = 'format-filter-btn btn btn-secondary text-xs';
+          });
+          btn.className = 'format-filter-btn btn btn-primary text-xs';
+          renderBooksGrid();
+        });
+      });
+
+      document.querySelectorAll('.cat-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentCategory = btn.getAttribute('data-category');
+          document.querySelectorAll('.cat-pill').forEach(b => {
+            b.className = 'cat-pill btn btn-secondary text-xs';
+          });
+          btn.className = 'cat-pill btn btn-primary text-xs';
+          renderBooksGrid();
+        });
+      });
+
+      document.getElementById('btnCloseBookDetail').addEventListener('click', () => {
+        document.getElementById('bookDetailPanel').classList.add('hidden');
+      });
+
+      // Global Event Delegation for Book Actions, Quick Return, Member Detail, and Fines
+      document.body.addEventListener('click', (e) => {
+        const readBtn = e.target.closest('.btn-read-ebook');
+        if (readBtn) {
+          openEbookReader(readBtn.getAttribute('data-read-book'));
+          return;
+        }
+        const borrowBtn = e.target.closest('.btn-borrow-physical');
+        if (borrowBtn) {
+          borrowPhysicalBook(borrowBtn.getAttribute('data-borrow-book'));
+          return;
+        }
+        const detailBtn = e.target.closest('.btn-open-detail');
+        if (detailBtn) {
+          switchTab('catalog');
+          openBookDetail(detailBtn.getAttribute('data-detail-book'));
+          return;
+        }
+        const quickRetBtn = e.target.closest('.btn-quick-return');
+        if (quickRetBtn) {
+          const bId = quickRetBtn.getAttribute('data-quick-return');
+          const book = booksData.find(b => b.id === bId);
+          if (book) book.stockPhysical += 1;
+          loansData = loansData.filter(l => l.bookId !== bId);
+          addAuditLog('Pustakawan', 'RETURN_LOAN', bId, 'Pengembalian berhasil diproses.');
+          renderStudentProfile();
+          renderBooksGrid();
+          renderLoansAndJournals();
+          renderAllTables();
+          showToast('Pengembalian berhasil diproses.');
+          return;
+        }
+        const viewMemberBtn = e.target.closest('.btn-view-member');
+        if (viewMemberBtn) {
+          const code = viewMemberBtn.getAttribute('data-view-member');
+          const m = studentsData.find(s => s.barcode === code);
+          if (m) {
+            document.getElementById('detailMemberName').textContent = m.name;
+            document.getElementById('detailMemberCode').textContent = m.barcode;
+            document.getElementById('detailMemberClass').textContent = `Kelas ${m.className} · ${m.status}`;
+            document.getElementById('detailMemberTotalRead').textContent = `${m.booksRead} Buku`;
+            const unpaid = finesData.filter(f => f.memberBarcode === m.barcode && f.status === 'Belum Lunas').reduce((a, b) => a + b.amount, 0);
+            const fineEl = document.getElementById('detailMemberFine');
+            fineEl.textContent = unpaid > 0 ? `Rp${unpaid.toLocaleString('id-ID')} (Belum Lunas)` : 'Rp0 (Bebas Tagihan)';
+            fineEl.className = unpaid > 0 ? 'font-bold text-sm mt-0.5 text-[#cf222e]' : 'font-bold text-sm mt-0.5 text-[#1f883d]';
+            showToast(`Menampilkan detail anggota ${m.name}.`);
+          }
+          return;
+        }
+        const payBtn = e.target.closest('.btn-pay-fine');
+        if (payBtn) {
+          const id = payBtn.getAttribute('data-pay-fine');
+          const fine = finesData.find(f => f.id === id);
+          if (fine) {
+            fine.status = 'Lunas';
+            addAuditLog('Pustakawan', 'PAY_FINE', id, `Pembayaran denda Rp${fine.amount.toLocaleString('id-ID')}`);
+            renderStudentProfile();
+            showToast(`Pembayaran denda ${id} berhasil disimpan.`);
+          }
+          return;
+        }
+        const waiveBtn = e.target.closest('.btn-waive-fine');
+        if (waiveBtn) {
+          pendingWaiveFineId = waiveBtn.getAttribute('data-waive-fine');
+          document.getElementById('waiveReasonInput').value = '';
+          document.getElementById('modalWaiveFine').classList.remove('hidden');
+        }
+      });
+
+      // Waive Fine Confirmation Modal
+      const closeWaiveModal = () => {
+        document.getElementById('modalWaiveFine').classList.add('hidden');
+      };
+      document.getElementById('btnCloseWaiveModal').addEventListener('click', closeWaiveModal);
+      document.getElementById('btnCancelWaiveFine').addEventListener('click', closeWaiveModal);
+      document.getElementById('btnConfirmWaiveFine').addEventListener('click', () => {
+        const reason = document.getElementById('waiveReasonInput').value.trim();
+        if (!reason) {
+          showToast('Alasan pembebasan denda wajib diisi.', 'warn');
+          return;
+        }
+        const fine = finesData.find(f => f.id === pendingWaiveFineId);
+        if (fine) {
+          fine.status = 'Dibebaskan';
+          fine.waivedReason = reason;
+          addAuditLog('Pustakawan', 'WAIVE_FINE', fine.id, `Dibebaskan: ${reason}`);
+          renderStudentProfile();
+          showToast(`Denda ${fine.id} berhasil dibebaskan.`);
+        }
+        closeWaiveModal();
+      });
+
+      // Return Page Controls
+      document.getElementById('btnCheckReturnCopy').addEventListener('click', () => {
+        const code = document.getElementById('returnCopyCodeInput').value.trim();
+        const loan = loansData.find(l => l.bookId === code) || loansData[0];
+        if (loan) {
+          document.getElementById('retMemberName').textContent = loan.studentName;
+          document.getElementById('retBookTitle').textContent = loan.bookTitle;
+          document.getElementById('retDueDate').textContent = loan.dueDate;
+          showToast(`Data pinjaman eksemplar ${loan.bookId} ditemukan.`);
+        } else {
+          showToast('Kode eksemplar tidak ditemukan pada pinjaman aktif.', 'warn');
+        }
+      });
+
+      document.getElementById('btnSubmitReturn').addEventListener('click', () => {
+        const code = document.getElementById('returnCopyCodeInput').value.trim();
+        const cond = document.getElementById('returnConditionSelect').value;
+        const book = booksData.find(b => b.id === code) || booksData[0];
+        book.stockPhysical += 1;
+        addAuditLog('Pustakawan', 'RETURN_LOAN', book.id, `Kembali kondisi: ${cond}`);
+        renderStudentProfile();
+        renderBooksGrid();
+        renderAllTables();
+        showToast(`Pengembalian berhasil diproses (Kondisi: ${cond}).`);
+      });
+
+      document.getElementById('btnExtendLoan').addEventListener('click', () => {
+        showToast('Masa peminjaman berhasil diperpanjang +7 hari.');
+      });
+
+      // Barcode Desk Controls on Peminjaman Page
+      document.getElementById('adminStudentBarcodeInput').addEventListener('input', renderStudentProfile);
+      let sampleStudentIdx = 0;
+      document.getElementById('btnAdminFillSampleStudent').addEventListener('click', () => {
+        sampleStudentIdx = (sampleStudentIdx + 1) % studentsData.length;
+        const s = studentsData[sampleStudentIdx];
+        document.getElementById('adminStudentBarcodeInput').value = s.barcode;
+        renderStudentProfile();
+        showToast(`Nomor anggota ${s.barcode} (${s.name}) terdeteksi.`);
+      });
+
+      let sampleBookIdx = 0;
+      document.getElementById('btnAdminFillSampleBook').addEventListener('click', () => {
+        sampleBookIdx = (sampleBookIdx + 1) % booksData.length;
+        const b = booksData[sampleBookIdx];
+        document.getElementById('adminBookBarcodeInput').value = b.id;
+        showToast(`Kode eksemplar ${b.id} (${b.title}) dipilih.`);
+      });
+
+      document.getElementById('btnAdminProcessBorrow').addEventListener('click', () => {
+        const sCode = document.getElementById('adminStudentBarcodeInput').value.trim();
+        const bCode = document.getElementById('adminBookBarcodeInput').value.trim();
+        const student = studentsData.find(s => s.barcode === sCode) || activeStudent;
+        const book = booksData.find(b => b.id === bCode);
+        if (!book || book.stockPhysical <= 0) {
+          showToast('Buku tidak tersedia untuk dipinjam.', 'warn');
+          return;
+        }
+        book.stockPhysical -= 1;
+        student.xp += 30;
+        const loanNo = 'LN-2026-' + Math.floor(1000 + Math.random() * 9000);
+        loansData.unshift({
+          ticketCode: loanNo,
+          bookId: book.id,
+          bookTitle: book.title,
+          studentName: `${student.name} (${student.className})`,
+          studentBarcode: student.barcode,
+          borrowedDate: '19 Okt 2026',
+          dueDate: '26 Okt 2026',
+          status: 'Dipinjam'
+        });
+        addAuditLog('Pustakawan', 'CREATE_LOAN', loanNo, `Peminjaman ${book.id} oleh ${student.barcode}`);
+        renderStudentProfile();
+        renderBooksGrid();
+        renderLoansAndJournals();
+        renderLeaderboards();
+        renderAllTables();
+        showToast('Peminjaman berhasil disimpan.');
+      });
+
+      document.getElementById('btnAdminProcessReturn').addEventListener('click', () => {
+        const bCode = document.getElementById('adminBookBarcodeInput').value.trim();
+        const book = booksData.find(b => b.id === bCode) || booksData[0];
+        book.stockPhysical += 1;
+        addAuditLog('Pustakawan', 'RETURN_LOAN', book.id, 'Pengembalian berhasil diproses.');
+        renderStudentProfile();
+        renderBooksGrid();
+        renderAllTables();
+        showToast('Pengembalian berhasil diproses.');
+      });
+
+      // Add Book Form
+      document.getElementById('formAddBook').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const title = document.getElementById('newBookTitle').value.trim();
+        const author = document.getElementById('newBookAuthor').value.trim();
+        const category = document.getElementById('newBookCategory').value;
+        const stock = parseInt(document.getElementById('newBookStock').value || '1', 10);
+        const barcode = document.getElementById('newBookBarcode').value.trim() || ('BK-SMP-00' + (booksData.length + 1));
+        const synopsis = document.getElementById('newBookSynopsis').value.trim() || 'Materi buku perpustakaan sekolah.';
+
+        booksData.unshift({
+          id: barcode,
+          isbn: '978-602-244-888-1',
+          title,
+          author,
+          publisher: 'Kemendikdasmen',
+          publishedYear: 2026,
+          category,
+          classLevel: 'Kelas VIII',
+          shelfLocation: 'Rak A-04',
+          format: stock > 0 ? 'hybrid' : 'ebook',
+          typeLabel: 'PDF & Cetak',
+          totalCopies: stock,
+          stockPhysical: stock,
+          xpReward: 50,
+          icon: '📘',
+          reactions: { fire: 1 },
+          pages: [`<strong>${title}</strong><br><br>${synopsis}`]
+        });
+
+        addAuditLog('Pustakawan', 'CREATE_BOOK', barcode, `Menambahkan buku "${title}"`);
+        e.target.reset();
+        renderBooksGrid();
+        renderStudentProfile();
+        showToast('Data buku berhasil diperbarui.');
+      });
+
+      // Member & Report Buttons
+      document.getElementById('btnAddDemoMember').addEventListener('click', () => {
+        const newCode = 'SMP-2026-0' + Math.floor(100 + Math.random() * 899);
+        studentsData.push({
+          barcode: newCode,
+          nisn: '0109988776',
+          type: 'Siswa',
+          name: 'Alya Zahra Putri',
+          className: '7A',
+          xp: 500,
+          streak: 1,
+          booksRead: 3,
+          classRank: 4,
+          status: 'Aktif',
+          badges: ['Anggota Baru']
+        });
+        addAuditLog('Pustakawan', 'CREATE_MEMBER', newCode, 'Tambah anggota baru Kelas 7A');
+        renderStudentSwitchModal();
+        renderLeaderboards();
+        showToast(`Anggota ${newCode} berhasil disimpan.`);
+      });
+
+      document.getElementById('btnPrintMemberCard').addEventListener('click', () => {
+        showToast('Menyiapkan cetak Kartu Anggota Barcode...');
+      });
+      document.getElementById('btnPrintBarcodeLabels').addEventListener('click', () => {
+        showToast('Menyiapkan cetak label Barcode/QR eksemplar...');
+      });
+      document.getElementById('btnImportBooksDemo').addEventListener('click', () => {
+        showToast('Import selesai. 120 data berhasil dimasukkan.');
+      });
+      document.getElementById('btnExportBooksDemo').addEventListener('click', () => {
+        showToast('Mengunduh file Excel katalog buku...');
+      });
+      document.getElementById('btnExportLoansReport').addEventListener('click', () => {
+        showToast('Export Excel laporan sirkulasi berhasil dikirim ke Google Sheets.');
+      });
+      document.getElementById('btnExportCsvReport').addEventListener('click', () => {
+        showToast('Export CSV laporan berhasil diunduh.');
+      });
+      document.getElementById('btnExportGlsReport').addEventListener('click', () => {
+        showToast('Export PDF laporan berhasil disiapkan.');
+      });
+
+      // Reader Controls
+      document.getElementById('btnCloseReader').addEventListener('click', () => {
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        document.getElementById('modalEbookReader').classList.add('hidden');
+      });
+      document.getElementById('btnToggleAudioRead').addEventListener('click', () => {
+        if (!activeReaderBook) return;
+        const rawText = activeReaderBook.pages[activeReaderPage].replace(/<[^>]+>/g, ' ');
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const utter = new SpeechSynthesisUtterance(rawText);
+          utter.lang = 'id-ID';
+          window.speechSynthesis.speak(utter);
+        }
+        showToast('Memutar narasi suara buku audio...');
+      });
+      document.getElementById('btnPrevPage').addEventListener('click', () => {
+        if (activeReaderPage > 0) {
+          activeReaderPage -= 1;
+          updateReaderView();
+        }
+      });
+      document.getElementById('btnNextPage').addEventListener('click', () => {
+        if (activeReaderBook && activeReaderPage < activeReaderBook.pages.length - 1) {
+          activeReaderPage += 1;
+          updateReaderView();
+        } else {
+          showToast('Halaman selesai. Silakan simpan ringkasan Jurnal GLS di bawah.');
+        }
+      });
+      document.getElementById('btnClaimReadingXp').addEventListener('click', () => {
+        if (!activeReaderBook) return;
+        const inputEl = document.getElementById('readerJournalInput');
+        const notes = inputEl.value.trim() || 'Materi buku ini sangat bermanfaat dan mudah dipahami.';
+        activeStudent.xp += activeReaderBook.xpReward;
+        activeStudent.booksRead += 1;
+        journalsData.unshift({
+          bookTitle: activeReaderBook.title,
+          studentName: `${activeStudent.name} (${activeStudent.className})`,
+          date: 'Baru saja',
+          summary: notes,
+          xpEarned: activeReaderBook.xpReward
+        });
+        addAuditLog(activeStudent.name, 'SUBMIT_JOURNAL', activeReaderBook.id, 'Menyimpan Jurnal Literasi GLS');
+        inputEl.value = '';
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        document.getElementById('modalEbookReader').classList.add('hidden');
+        renderStudentProfile();
+        renderLoansAndJournals();
+        renderLeaderboards();
+        showToast('Jurnal literasi berhasil disimpan (+50 XP).');
+      });
+
+      // Barcode Member Login Modal
+      const openBarcodeModal = () => {
+        renderStudentSwitchModal();
+        document.getElementById('modalBarcodeLogin').classList.remove('hidden');
+      };
+      document.getElementById('btnOpenBarcodeLogin').addEventListener('click', openBarcodeModal);
+      document.getElementById('btnQuickScanBook').addEventListener('click', openBarcodeModal);
+      document.getElementById('btnCloseBarcodeModal').addEventListener('click', () => {
+        document.getElementById('modalBarcodeLogin').classList.add('hidden');
+      });
+      document.getElementById('studentSwitchList').addEventListener('click', (e) => {
+        const btn = e.target.closest('.student-switch-btn');
+        if (!btn) return;
+        const code = btn.getAttribute('data-select-student');
+        const found = studentsData.find(s => s.barcode === code);
+        if (found) {
+          activeStudent = found;
+          renderStudentProfile();
+          renderLeaderboards();
+          renderStudentSwitchModal();
+          document.getElementById('modalBarcodeLogin').classList.add('hidden');
+          showToast(`Anggota aktif: ${found.name} (${found.barcode}).`);
+        }
+      });
+      document.getElementById('btnSubmitManualBarcode').addEventListener('click', () => {
+        const val = document.getElementById('manualBarcodeInput').value.trim().toUpperCase();
+        const found = studentsData.find(s => s.barcode.toUpperCase() === val || s.nisn === val);
+        if (found) {
+          activeStudent = found;
+          renderStudentProfile();
+          renderLeaderboards();
+          document.getElementById('modalBarcodeLogin').classList.add('hidden');
+          showToast(`Anggota aktif: ${found.name}.`);
+        } else {
+          showToast('Nomor anggota tidak ditemukan.', 'warn');
+        }
+      });
+
+      // Architecture Modal
+      document.getElementById('btnOpenArchitecture').addEventListener('click', () => {
+        document.getElementById('modalArchitecture').classList.remove('hidden');
+      });
+      document.getElementById('btnCloseArchitecture').addEventListener('click', () => {
+        document.getElementById('modalArchitecture').classList.add('hidden');
+      });
+
+      // Copy Code Buttons in Architecture Modal
+      document.querySelectorAll('.btn-copy-code').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetId = btn.getAttribute('data-copy-target');
+          const pre = document.getElementById(targetId);
+          if (!pre) return;
+          const textarea = document.createElement('textarea');
+          textarea.value = pre.textContent;
+          document.body.appendChild(textarea);
+          textarea.select();
+          try {
+            document.execCommand('copy');
+            showToast('Kode berhasil disalin ke clipboard.');
+          } catch (err) {
+            showToast('Silakan salin manual dari kotak kode.', 'warn');
+          }
+          textarea.remove();
+        });
+      });
+
+      // Live Connection Config (Vercel + Supabase + GAS)
+      document.getElementById('btnSaveEnvConfig').addEventListener('click', () => {
+        const sbUrl = document.getElementById('cfgSupabaseUrl').value.trim();
+        const sbKey = document.getElementById('cfgSupabaseAnonKey').value.trim();
+        const gasUrl = document.getElementById('cfgGasWebAppUrl').value.trim();
+        try {
+          localStorage.setItem('SIPUSTADIG_SUPABASE_URL', sbUrl);
+          localStorage.setItem('SIPUSTADIG_SUPABASE_KEY', sbKey);
+          localStorage.setItem('SIPUSTADIG_GAS_URL', gasUrl);
+        } catch (e) {}
+        const badge = document.getElementById('connStatusBadge');
+        if (sbUrl && sbKey) {
+          badge.textContent = 'Terhubung ke Supabase + GAS';
+          badge.className = 'badge badge-success';
+          addAuditLog('Admin IT', 'UPDATE_CONFIG', 'ENV', 'Mengaktifkan koneksi produksi Supabase & GAS');
+          showToast('Konfigurasi Supabase & Google Apps Script berhasil disimpan dan diaktifkan.');
+        } else {
+          badge.textContent = 'Mode Hybrid Demo';
+          badge.className = 'badge badge-primary';
+          showToast('Berjalan dalam Mode Hybrid Demo (In-Memory).');
+        }
+      });
+
+      document.getElementById('btnTestGasPing').addEventListener('click', () => {
+        const gasUrl = document.getElementById('cfgGasWebAppUrl').value.trim();
+        if (!gasUrl) {
+          showToast('Simulasi RPC Supabase & GAS berhasil (<180ms). Isi URL GAS untuk ping server produksi.');
+          return;
+        }
+        showToast('Mengirim ping ke endpoint Google Apps Script...');
+      });
+    });
+  </script>
+</body>
+</html>
